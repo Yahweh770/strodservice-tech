@@ -1,0 +1,49 @@
+{
+  "name": "strodservice-desktop",
+  "version": "1.0.0",
+  "description": "Desktop application for Строд-Сервис Технолоджи",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "npm run build-web && electron-builder build --win --x64",
+    "build-web": "cd ../strodservice-tech/frontend && npm run build",
+    "dist": "electron-builder --win --x64"
+  },
+  "keywords": [
+    "electron",
+    "desktop",
+    "application",
+    "strodservice"
+  ],
+  "author": "Строд-Сервис Технолоджи",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "build": {
+    "appId": "com.strodservice.desktop",
+    "productName": "Строд-Сервис Технолоджи",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "styles.css",
+      "../strodservice-tech/frontend/build/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
