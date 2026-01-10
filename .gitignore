@@ -1,86 +1,48 @@
 ```
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Dependencies
+node_modules/
 
-# Virtual environments
-venv/
-.venv/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Coverage
-.coverage
-htmlcov/
-.coverage.*
-.coverage.xml
-coverage.xml
+# Editors
+.vscode/
+.idea/
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
+# Build artifacts
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+build/
+target/
 
-# Pytest
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+coverage/
+htmlcov/
 .pytest_cache/
-
-# Mypy
 .mypy_cache/
 
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Compiled files
+*.exe
+*.dll
+*.so
+*.a
+*.o
+*.obj
+*.out
 
-# OS
+# System files
 .DS_Store
 Thumbs.db
 ```
