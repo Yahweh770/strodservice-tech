@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win"
+    "build": "electron-builder --config electron-builder-config.js"
   },
   "keywords": ["electron"],
   "author": "Your Name",
@@ -15,6 +15,7 @@
     "electron-builder": "^24.0.0"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
     "electron-updater": "^6.1.0"
   }
 }
