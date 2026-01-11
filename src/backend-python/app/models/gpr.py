@@ -6,6 +6,41 @@ from typing import Dict, Any
 from ..database import Base
 
 
+class Customer(Base):
+    """
+    Модель для хранения информации о заказчиках
+    """
+    __tablename__ = "customers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(String, unique=True, index=True, nullable=False)  # Уникальный ID заказчика
+    name = Column(String, nullable=False)  # Название заказчика
+    contact_info = Column(String, nullable=True)  # Контактная информация
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Связи
+    gpr_records = relationship("GPRRecord", back_populates="customer")
+
+
+class ProjectObject(Base):
+    """
+    Модель для хранения информации об объектах проекта
+    """
+    __tablename__ = "project_objects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    object_id = Column(String, unique=True, index=True, nullable=False)  # Уникальный ID объекта
+    name = Column(String, nullable=False)  # Название объекта
+    location = Column(String, nullable=True)  # Местоположение объекта
+    description = Column(String, nullable=True)  # Описание объекта
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Связи
+    gpr_records = relationship("GPRRecord", back_populates="project_object")
+
+
 class GPRRecord(Base):
     """
     Модель для хранения записей Графика Производства Работ (ГПР)
@@ -53,8 +88,6 @@ class Material(Base):
     description = Column(String, nullable=True)                    # Описание материала
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    gpr_records = relationship("GPRRecord", back_populates="material")
 
 
 # Добавим справочник материалов в базу данных

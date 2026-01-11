@@ -77,3 +77,55 @@ class Material(MaterialBase):
 
     class Config:
         from_attributes = True
+
+
+class CustomerBase(BaseModel):
+    customer_id: str
+    name: str
+    contact_info: Optional[str] = None
+
+
+class CustomerCreate(CustomerBase):
+    pass
+
+
+class CustomerUpdate(BaseModel):
+    customer_id: Optional[str] = None
+    name: Optional[str] = None
+    contact_info: Optional[str] = None
+
+
+class Customer(CustomerBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectObjectBase(BaseModel):
+    object_id: str
+    name: str
+    location: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ProjectObjectCreate(ProjectObjectBase):
+    pass
+
+
+class ProjectObjectUpdate(BaseModel):
+    object_id: Optional[str] = None
+    name: Optional[str] = None
+    location: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ProjectObject(ProjectObjectBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
