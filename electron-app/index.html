@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Electron Application</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Hello from Electron!</h1>
+    <p>This is a simple Electron application.</p>
+    <div id="info">
+        <p><strong>Platform:</strong> <span id="platform"></span></p>
+        <p><strong>Version:</strong> <span id="version"></span></p>
+    </div>
+
+    <script>
+        // This is our main script
+        document.getElementById('platform').innerText = process.platform;
+        document.getElementById('version').innerText = process.versions.electron;
+    </script>
+</body>
+</html>
