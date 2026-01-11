@@ -13,12 +13,6 @@ module.exports = {
   ],
   win: {
     target: 'nsis',
-    publisherName: 'Example Company'
-  },
-  nsis: {
-    createDesktopShortcut: true,
-    createStartMenuShortcut: true,
-    shortcutName: 'Electron App',
-    perMachine: true
+    icon: 'icon.ico' // Optional: Add an icon file
   }
 };
