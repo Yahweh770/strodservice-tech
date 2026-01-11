@@ -49,18 +49,8 @@ const GPRTable: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Здесь должны быть реальные вызовы API для получения заказчиков и объектов
-        // Пока используем заглушки
-        setCustomers([
-          { id: '1', name: 'Заказчик 1' },
-          { id: '2', name: 'Заказчик 2' }
-        ]);
+        setLoading(true);
         
-        setObjects([
-          { id: '1', name: 'Объект 1', projectId: '1' },
-          { id: '2', name: 'Объект 2', projectId: '2' }
-        ]);
-
         // Загрузка записей ГПР
         const gprRecords = await gprService.getGPRRecords();
         setRecords(gprRecords);
