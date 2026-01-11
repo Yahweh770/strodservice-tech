@@ -48,4 +48,3 @@
   "scripts": {
     "build": "vite build"
   }
-}
