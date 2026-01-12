@@ -20,3 +20,7 @@ from .user import (
     UserBase, UserCreate, UserUpdate, UserResponse,
     UserLogin, Token, TokenData
 )
+from .work_session import (
+    WorkSessionBase, WorkSessionCreate, WorkSessionEnd, WorkSessionResponse,
+    WorkSessionSummary, EmployeeWithWorkInfo
+)

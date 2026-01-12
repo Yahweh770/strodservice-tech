@@ -1,11 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 
 from app.api import gpr_routes
 from app.api.document_routes import router as document_router
 from app.api.file_routes import router as file_router
 from app.api.auth_routes import router as auth_router
+from app.api.work_session_routes import router as work_session_router
+
+# Initialize templates
+templates = Jinja2Templates(directory="templates")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -78,6 +84,61 @@ app.include_router(file_router)
 # Подключение маршрутов аутентификации
 app.include_router(auth_router)
 
-@app.get("/")
-def read_root():
-    return {"message": "Строд-Сервис Технолоджи API - Управление строительством"}
+# Подключение маршрутов рабочих сессий
+app.include_router(work_session_router)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# Web UI routes
+from fastapi import Request, Depends, HTTPException
+from fastapi.responses import HTMLResponse
+from app.auth import get_current_active_user
+from app.database import get_db
+from app import crud_work_session
+from sqlalchemy.orm import Session
+from typing import Optional
+from datetime import date
+
+@app.get("/", response_class=HTMLResponse)
+async def dashboard(request: Request, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    # Get current work status
+    work_status = crud_work_session.get_current_work_status(db, current_user.id)
+    today_sessions = crud_work_session.get_work_sessions_for_date(db, current_user.id, date.today())
+    today_hours = crud_work_session.calculate_total_work_hours(today_sessions)
+    
+    # Calculate durations for each session
+    sessions_with_duration = []
+    for session in today_sessions:
+        duration = crud_work_session.calculate_work_hours_for_session(session)
+        sessions_with_duration.append({
+            'session': session,
+            'duration': duration
+        })
+    
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request, 
+        "user": current_user,
+        "work_status": work_status,
+        "today_hours": today_hours,
+        "today_sessions": sessions_with_duration
+    })
+
+
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request, current_user=Depends(get_current_active_user)):
+    return templates.TemplateResponse("profile.html", {"request": request, "user": current_user})
+
+
+@app.get("/employees", response_class=HTMLResponse)
+async def employees(request: Request, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Доступ разрешен только администраторам")
+    
+    employees = crud_work_session.get_all_employees_with_work_info(db)
+    return templates.TemplateResponse("employees.html", {
+        "request": request, 
+        "user": current_user,
+        "employees": employees
+    })
