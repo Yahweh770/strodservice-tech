@@ -48,8 +48,8 @@ class GPRRecord(Base):
     __tablename__ = "gpr_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(String, nullable=False)  # ID заказчика из связанной таблицы
-    object_id = Column(String, nullable=False)    # ID объекта из связанной таблицы
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)  # Связь с заказчиком
+    object_id = Column(Integer, ForeignKey("project_objects.id"), nullable=False)  # Связь с объектом
     work_type = Column(String, nullable=False)   # Тип работ (материал исполнения)
     volume_plan = Column(Float, nullable=False)  # Объем планируемых работ
     volume_fact = Column(Float, default=0.0)     # Объем фактически выполненных работ
@@ -101,3 +101,7 @@ MATERIALS_REFERENCE = [
     {"id": "tp", "name": "ТП"},
     {"id": "demarkirovka", "name": "Демаркировка"}
 ]
+
+# Добавим связи к модели Material
+Material.requests = relationship("MaterialRequest", back_populates="material")
+Material.stocks = relationship("MaterialStock", back_populates="material")

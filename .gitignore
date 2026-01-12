@@ -1,4 +1,7 @@
 ```
+# Database
+*.db
+
 # Python
 __pycache__/
 *.pyc
@@ -9,18 +12,20 @@ env/
 venv/
 .venv/
 .ENV
-.ENV.local
 .env
-.env.local
-.env.*
-
-# Logs
-*.log
-
-# Testing
+*.env
+*.env.*
+.pytest_cache/
+.mypy_cache/
 .coverage
-coverage/
 htmlcov/
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # IDE
 .vscode/
@@ -33,17 +38,9 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
+# Logs
+*.log
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Dependencies
-.mypy_cache/
-.pytest_cache/
+# Coverage
+coverage/
 ```

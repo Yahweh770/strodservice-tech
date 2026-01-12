@@ -351,3 +351,186 @@ def delete_document_return(db: Session, return_id: int):
         db.delete(db_return)
         db.commit()
     return db_return
+
+
+# CRUD операции для категорий файлов
+def get_file_category(db: Session, category_id: int):
+    return db.query(models.FileCategory).filter(models.FileCategory.id == category_id).first()
+
+
+def get_file_categories(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.FileCategory).offset(skip).limit(limit).all()
+
+
+def create_file_category(db: Session, category: schemas.FileCategoryCreate):
+    db_category = models.FileCategory(**category.model_dump())
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+
+def update_file_category(db: Session, category_id: int, category: schemas.FileCategoryUpdate):
+    db_category = get_file_category(db, category_id)
+    if db_category:
+        for key, value in category.model_dump(exclude_unset=True).items():
+            setattr(db_category, key, value)
+        db.commit()
+        db.refresh(db_category)
+    return db_category
+
+
+def delete_file_category(db: Session, category_id: int):
+    db_category = get_file_category(db, category_id)
+    if db_category:
+        db.delete(db_category)
+        db.commit()
+    return db_category
+
+
+# CRUD операции для загруженных файлов
+def get_uploaded_file(db: Session, file_id: int):
+    return db.query(models.UploadedFile).filter(models.UploadedFile.id == file_id).first()
+
+
+def get_uploaded_files(db: Session, skip: int = 0, limit: int = 100, section_id: Optional[str] = None, project_id: Optional[str] = None):
+    query = db.query(models.UploadedFile)
+    
+    if section_id:
+        query = query.filter(models.UploadedFile.section_id == section_id)
+    if project_id:
+        query = query.filter(models.UploadedFile.project_id == project_id)
+        
+    return query.offset(skip).limit(limit).all()
+
+
+def create_uploaded_file(db: Session, file: schemas.UploadedFileCreate):
+    db_file = models.UploadedFile(**file.model_dump())
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+    return db_file
+
+
+def update_uploaded_file(db: Session, file_id: int, file: schemas.UploadedFileUpdate):
+    db_file = get_uploaded_file(db, file_id)
+    if db_file:
+        for key, value in file.model_dump(exclude_unset=True).items():
+            setattr(db_file, key, value)
+        db.commit()
+        db.refresh(db_file)
+    return db_file
+
+
+def delete_uploaded_file(db: Session, file_id: int):
+    db_file = get_uploaded_file(db, file_id)
+    if db_file:
+        db.delete(db_file)
+        db.commit()
+    return db_file
+
+
+# CRUD операции для запросов на материалы
+def get_material_request(db: Session, request_id: int):
+    return db.query(models.MaterialRequest).filter(models.MaterialRequest.id == request_id).first()
+
+
+def get_material_requests(db: Session, skip: int = 0, limit: int = 100, status: Optional[str] = None, section_id: Optional[str] = None, project_id: Optional[str] = None):
+    query = db.query(models.MaterialRequest)
+    
+    if status:
+        query = query.filter(models.MaterialRequest.status == status)
+    if section_id:
+        query = query.filter(models.MaterialRequest.section_id == section_id)
+    if project_id:
+        query = query.filter(models.MaterialRequest.project_id == project_id)
+        
+    return query.offset(skip).limit(limit).all()
+
+
+def create_material_request(db: Session, request: schemas.MaterialRequestCreate):
+    db_request = models.MaterialRequest(**request.model_dump())
+    db.add(db_request)
+    db.commit()
+    db.refresh(db_request)
+    return db_request
+
+
+def update_material_request(db: Session, request_id: int, request: schemas.MaterialRequestUpdate):
+    db_request = get_material_request(db, request_id)
+    if db_request:
+        for key, value in request.model_dump(exclude_unset=True).items():
+            setattr(db_request, key, value)
+        db.commit()
+        db.refresh(db_request)
+    return db_request
+
+
+def delete_material_request(db: Session, request_id: int):
+    db_request = get_material_request(db, request_id)
+    if db_request:
+        db.delete(db_request)
+        db.commit()
+    return db_request
+
+
+# CRUD операции для остатков материалов
+def get_material_stock(db: Session, stock_id: int):
+    return db.query(models.MaterialStock).filter(models.MaterialStock.id == stock_id).first()
+
+
+def get_material_stock_by_material(db: Session, material_id: int):
+    return db.query(models.MaterialStock).filter(models.MaterialStock.material_id == material_id).first()
+
+
+def get_material_stocks(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.MaterialStock).offset(skip).limit(limit).all()
+
+
+def create_material_stock(db: Session, stock: schemas.MaterialStockCreate):
+    db_stock = models.MaterialStock(**stock.model_dump())
+    db.add(db_stock)
+    db.commit()
+    db.refresh(db_stock)
+    return db_stock
+
+
+def update_material_stock(db: Session, stock_id: int, stock: schemas.MaterialStockUpdate):
+    db_stock = get_material_stock(db, stock_id)
+    if db_stock:
+        for key, value in stock.model_dump(exclude_unset=True).items():
+            setattr(db_stock, key, value)
+        db.commit()
+        db.refresh(db_stock)
+    return db_stock
+
+
+def delete_material_stock(db: Session, stock_id: int):
+    db_stock = get_material_stock(db, stock_id)
+    if db_stock:
+        db.delete(db_stock)
+        db.commit()
+    return db_stock
+
+
+def check_material_threshold(db: Session, material_id: int):
+    """Проверяет, достигнут ли минимальный порог для материала"""
+    stock = get_material_stock_by_material(db, material_id)
+    if stock and stock.quantity <= stock.min_threshold:
+        return True
+    return False
+
+
+def get_low_stock_materials(db: Session):
+    """Получает список материалов с уровнем ниже минимального порога"""
+    stocks = db.query(models.MaterialStock).all()
+    low_stock_materials = []
+    for stock in stocks:
+        if stock.quantity <= stock.min_threshold:
+            low_stock_materials.append({
+                'material': stock.material,
+                'current_stock': stock.quantity,
+                'min_threshold': stock.min_threshold,
+                'location': stock.location
+            })
+    return low_stock_materials
