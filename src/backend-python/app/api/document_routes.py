@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List
 from datetime import datetime
 import json
@@ -109,15 +109,20 @@ def get_documents(
     """
     Получить список документов с возможностью фильтрации
     """
-    documents = crud.get_documents(
-        db, 
-        skip=skip, 
-        limit=limit, 
-        project_id=project_id,
-        status=status,
-        doc_number=doc_number,
-        title=title
-    )
+    # Используем CRUD функцию с eager loading для избежания N+1 проблемы
+    query = db.query(models.Document)\
+        .options(selectinload(models.Document.type))
+    
+    if project_id:
+        query = query.filter(models.Document.project_id == project_id)
+    if status:
+        query = query.filter(models.Document.status == status)
+    if doc_number:
+        query = query.filter(models.Document.doc_number.contains(doc_number))
+    if title:
+        query = query.filter(models.Document.title.contains(title))
+        
+    documents = query.offset(skip).limit(limit).all()
     return documents
 
 
@@ -143,7 +148,13 @@ def get_document(
     """
     Получить документ по ID с подробной информацией
     """
-    document = crud.get_document(db, document_id)
+    # Загружаем документ вместе со связанными данными для избежания N+1 проблемы
+    document = db.query(models.Document)\
+        .options(selectinload(models.Document.type))\
+        .options(selectinload(models.Document.shipments))\
+        .options(selectinload(models.Document.returns))\
+        .filter(models.Document.id == document_id).first()
+        
     if not document:
         raise HTTPException(status_code=404, detail="Документ не найден")
     return document

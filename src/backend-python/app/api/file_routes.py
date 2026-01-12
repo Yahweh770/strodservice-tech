@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List
 import os
 from datetime import datetime
@@ -108,7 +108,15 @@ def get_uploaded_files(
     """
     Получить список загруженных файлов с возможностью фильтрации
     """
-    files = crud.get_uploaded_files(db, skip=skip, limit=limit, section_id=section_id, project_id=project_id)
+    query = db.query(models.UploadedFile)\
+        .options(selectinload(models.UploadedFile.category))
+    
+    if section_id:
+        query = query.filter(models.UploadedFile.section_id == section_id)
+    if project_id:
+        query = query.filter(models.UploadedFile.project_id == project_id)
+        
+    files = query.offset(skip).limit(limit).all()
     return files
 
 
@@ -250,7 +258,17 @@ def get_material_requests(
     """
     Получить список запросов на материалы
     """
-    requests = crud.get_material_requests(db, skip=skip, limit=limit, status=status, section_id=section_id, project_id=project_id)
+    query = db.query(models.MaterialRequest)\
+        .options(selectinload(models.MaterialRequest.material))
+    
+    if status:
+        query = query.filter(models.MaterialRequest.status == status)
+    if section_id:
+        query = query.filter(models.MaterialRequest.section_id == section_id)
+    if project_id:
+        query = query.filter(models.MaterialRequest.project_id == project_id)
+        
+    requests = query.offset(skip).limit(limit).all()
     return requests
 
 
