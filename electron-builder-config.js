@@ -2,7 +2,7 @@ module.exports = {
   appId: 'com.strodservice.desktop',
   productName: 'Строд-Сервис Технолоджи',
   directories: {
-    output: 'dist'
+    output: 'release/dist'
   },
   files: [
     'electron-main.js',
