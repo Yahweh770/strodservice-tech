@@ -3,7 +3,8 @@ import {
   DataGrid,
   GridColDef,
   GridRenderCellParams,
-  GridValueGetterParams
+  GridValueGetterParams,
+  GridCellEditCommitParams
 } from '@mui/x-data-grid';
 import {
   Box,
@@ -148,7 +149,7 @@ const GPRTable: React.FC = () => {
       width: 200,
       valueGetter: (params: GridValueGetterParams) => getCustomerName(params.row.customerId),
       editable: true,
-      renderEditCell: (params: any) => (
+      renderEditCell: (params: GridRenderCellParams) => (
         <FormControl size="small" fullWidth>
           <Select
             value={params.row.customerId}
@@ -169,7 +170,7 @@ const GPRTable: React.FC = () => {
       width: 200,
       valueGetter: (params: GridValueGetterParams) => getObjectName(params.row.objectId),
       editable: true,
-      renderEditCell: (params: any) => (
+      renderEditCell: (params: GridRenderCellParams) => (
         <FormControl size="small" fullWidth>
           <Select
             value={params.row.objectId}
@@ -190,7 +191,7 @@ const GPRTable: React.FC = () => {
       width: 150,
       valueGetter: (params: GridValueGetterParams) => getWorkTypeName(params.row.workType),
       editable: true,
-      renderEditCell: (params: any) => (
+      renderEditCell: (params: GridRenderCellParams) => (
         <FormControl size="small" fullWidth>
           <Select
             value={params.row.workType}
@@ -321,7 +322,7 @@ const GPRTable: React.FC = () => {
           rows={records}
           columns={columns}
           editMode="cell"
-          onCellEditCommit={(params) => {
+          onCellEditCommit={(params: GridCellEditCommitParams) => {
             if (params.field === 'volumePlan' || params.field === 'customerId' || 
                 params.field === 'objectId' || params.field === 'workType') {
               handleFieldChange(params.id as string, params.field as keyof GPRRecordType, params.value);
