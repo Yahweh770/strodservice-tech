@@ -36,6 +36,7 @@ class UploadedFile(Base):
     section_name = Column(String, index=True, nullable=True)           # Название секции
     project_id = Column(String, index=True, nullable=True)             # ID проекта
     uploaded_by = Column(String, index=True, nullable=False)           # Кто загрузил файл
+    uploader_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=True)  # ID пользователя, который загрузил файл
     description = Column(Text, nullable=True)              # Описание файла
     is_active = Column(Boolean, default=True, index=True)              # Активен ли файл
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -43,6 +44,7 @@ class UploadedFile(Base):
 
     # Связи
     category = relationship("FileCategory", back_populates="files")
+    uploader = relationship("User", back_populates="documents_created")
 
 
 class MaterialRequest(Base):
@@ -62,6 +64,7 @@ class MaterialRequest(Base):
     reason = Column(Text, nullable=True)                      # Причина запроса
     status = Column(String, index=True, default="pending")                # Статус запроса: pending, approved, rejected, fulfilled
     requested_by = Column(String, index=True, nullable=False)             # Кто запросил
+    requester_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=True)  # ID пользователя, который запросил
     approved_by = Column(String, index=True, nullable=True)               # Кто одобрил
     approved_at = Column(DateTime(timezone=True), nullable=True)  # Когда одобрен
     fulfilled_at = Column(DateTime(timezone=True), nullable=True)  # Когда выполнен
@@ -70,6 +73,7 @@ class MaterialRequest(Base):
 
     # Связи
     material = relationship("Material", back_populates="requests")
+    requester = relationship("User", back_populates="material_requests")
 
 
 class MaterialStock(Base):

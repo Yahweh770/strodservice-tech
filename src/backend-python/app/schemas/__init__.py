@@ -16,3 +16,7 @@ from .files import (
     MaterialRequest, MaterialRequestCreate, MaterialRequestUpdate,
     MaterialStock, MaterialStockCreate, MaterialStockUpdate
 )
+from .user import (
+    UserBase, UserCreate, UserUpdate, UserResponse,
+    UserLogin, Token, TokenData
+)
