@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Личный кабинет - Строд-Сервис{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+            color: white;
+        }
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .sidebar a:hover {
+            color: white;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .header-title {
+            color: #1a237e;
+            border-bottom: 2px solid #283593;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-work-session {
+            transition: all 0.3s ease;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4 p-3">
+                        <h5><i class="fas fa-building"></i> Строд-Сервис</h5>
+                        <hr>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">
+                                <i class="fas fa-tachometer-alt"></i> Дашборд
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/profile' %}active{% endif %}" href="/profile">
+                                <i class="fas fa-user"></i> Профиль
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/employees' %}active{% endif %}" href="/employees">
+                                <i class="fas fa-users"></i> Сотрудники
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/docs">
+                                <i class="fas fa-book"></i> Документация API
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="dropdown border-top mt-4 pt-3">
+                        <a class="dropdown-toggle text-white text-decoration-none d-block px-3 py-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.full_name or user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user-edit"></i> Редактировать профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">{% block header %}{% endblock %}</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            {% block actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function startWorkSession() {
+            fetch('/work-sessions/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') // assuming token is stored
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.detail && data.detail.includes('уже')) {
+                    alert(data.detail);
+                } else {
+                    alert('Рабочая сессия начата!');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при начале рабочей сессии');
+            });
+        }
+
+        function endWorkSession() {
+            fetch('/work-sessions/end', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.detail && data.detail.includes('нет')) {
+                    alert(data.detail);
+                } else {
+                    alert('Рабочая сессия завершена!');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при завершении рабочей сессии');
+            });
+        }
+    </script>
+</body>
+</html>
