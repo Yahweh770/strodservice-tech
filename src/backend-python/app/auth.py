@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
 import os
+import json
 
 # Security configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
@@ -60,6 +61,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Get current user from token"""
     token = credentials.credentials
     user_data = verify_token(token)
-    # Here you would typically fetch user from database
-    # For now, returning basic user info from token
-    return {"username": user_data.get("sub"), "user_id": user_data.get("user_id")}
+    
+    # Extract user information from token
+    return {
+        "username": user_data.get("sub"),
+        "user_id": user_data.get("user_id"),
+        "is_admin": user_data.get("is_admin", False),
+        "permissions": user_data.get("permissions", {})
+    }

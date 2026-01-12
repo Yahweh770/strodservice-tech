@@ -169,7 +169,7 @@ def upload_file(
         description=description
     )
     
-    db_file = crud.create_uploaded_file(db, file_create)
+    db_file = crud.create_uploaded_file(db, file_create, user_id=current_user.get("user_id"))
     return db_file
 
 
@@ -294,7 +294,7 @@ def create_material_request(
     # Устанавливаем пользователя, который сделал запрос
     request.requested_by = current_user.get("username", "unknown")
     
-    db_request = crud.create_material_request(db, request)
+    db_request = crud.create_material_request(db, request, user_id=current_user.get("user_id"))
     return db_request
 
 

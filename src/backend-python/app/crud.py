@@ -404,8 +404,13 @@ def get_uploaded_files(db: Session, skip: int = 0, limit: int = 100, section_id:
     return query.offset(skip).limit(limit).all()
 
 
-def create_uploaded_file(db: Session, file: schemas.UploadedFileCreate):
-    db_file = models.UploadedFile(**file.model_dump())
+def create_uploaded_file(db: Session, file: schemas.UploadedFileCreate, user_id: Optional[int] = None):
+    file_data = file.model_dump()
+    # Если передан user_id, добавляем его в данные файла
+    if user_id is not None:
+        file_data['uploader_id'] = user_id
+    
+    db_file = models.UploadedFile(**file_data)
     db.add(db_file)
     db.commit()
     db.refresh(db_file)
@@ -448,8 +453,13 @@ def get_material_requests(db: Session, skip: int = 0, limit: int = 100, status: 
     return query.offset(skip).limit(limit).all()
 
 
-def create_material_request(db: Session, request: schemas.MaterialRequestCreate):
-    db_request = models.MaterialRequest(**request.model_dump())
+def create_material_request(db: Session, request: schemas.MaterialRequestCreate, user_id: Optional[int] = None):
+    request_data = request.model_dump()
+    # Если передан user_id, добавляем его в данные запроса
+    if user_id is not None:
+        request_data['requester_id'] = user_id
+    
+    db_request = models.MaterialRequest(**request_data)
     db.add(db_request)
     db.commit()
     db.refresh(db_request)

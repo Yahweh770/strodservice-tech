@@ -38,6 +38,7 @@ class UploadedFileBase(BaseModel):
     section_name: Optional[str] = None
     project_id: Optional[str] = None
     uploaded_by: str
+    uploader_id: Optional[int] = None
     description: Optional[str] = None
 
 
@@ -75,6 +76,7 @@ class MaterialRequestBase(BaseModel):
     project_id: Optional[str] = None
     reason: Optional[str] = None
     requested_by: str
+    requester_id: Optional[int] = None
 
 
 class MaterialRequestCreate(MaterialRequestBase):
