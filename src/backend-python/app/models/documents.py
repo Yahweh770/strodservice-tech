@@ -26,11 +26,11 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, index=True)
-    doc_number = Column(String, nullable=False)          # Номер документа
-    title = Column(Text, nullable=False)                 # Наименование документа
-    project_id = Column(String, nullable=False)          # ID проекта (согласно архитектуре)
-    document_type_id = Column(Integer, ForeignKey("document_types.id"), nullable=False)  # Тип документа
-    status = Column(String, default="in_office")         # Статус документа: in_office, shipped, returned
+    doc_number = Column(String, index=True, nullable=False)          # Номер документа
+    title = Column(Text, index=True, nullable=False)                 # Наименование документа
+    project_id = Column(String, index=True, nullable=False)          # ID проекта (согласно архитектуре)
+    document_type_id = Column(Integer, ForeignKey("document_types.id"), index=True, nullable=False)  # Тип документа
+    status = Column(String, index=True, default="in_office")         # Статус документа: in_office, shipped, returned
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

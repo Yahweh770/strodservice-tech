@@ -48,13 +48,13 @@ class GPRRecord(Base):
     __tablename__ = "gpr_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)  # Связь с заказчиком
-    object_id = Column(Integer, ForeignKey("project_objects.id"), nullable=False)  # Связь с объектом
-    work_type = Column(String, nullable=False)   # Тип работ (материал исполнения)
+    customer_id = Column(Integer, ForeignKey("customers.id"), index=True, nullable=False)  # Связь с заказчиком
+    object_id = Column(Integer, ForeignKey("project_objects.id"), index=True, nullable=False)  # Связь с объектом
+    work_type = Column(String, index=True, nullable=False)   # Тип работ (материал исполнения)
     volume_plan = Column(Float, nullable=False)  # Объем планируемых работ
     volume_fact = Column(Float, default=0.0)     # Объем фактически выполненных работ
     volume_remainder = Column(Float, default=0.0) # Остаток объема
-    progress = Column(Float, default=0.0)        # Процент выполнения
+    progress = Column(Float, default=0.0, index=True)        # Процент выполнения
     daily_data = Column(String, default="{}")    # JSON строка с ежедневными данными
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -71,9 +71,9 @@ class WeeklyReport(Base):
     __tablename__ = "weekly_reports"
 
     id = Column(Integer, primary_key=True, index=True)
-    week_start_date = Column(DateTime, nullable=False)  # Дата начала недели
+    week_start_date = Column(DateTime, index=True, nullable=False)  # Дата начала недели
     report_data = Column(String, nullable=False)        # JSON строка с данными отчета
-    created_by = Column(String, nullable=False)         # Кто сформировал отчет
+    created_by = Column(String, index=True, nullable=False)         # Кто сформировал отчет
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -85,7 +85,7 @@ class Material(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)  # Название материала
-    description = Column(String, nullable=True)                    # Описание материала
+    description = Column(String, index=True, nullable=True)                    # Описание материала
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
