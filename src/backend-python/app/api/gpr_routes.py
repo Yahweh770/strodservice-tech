@@ -7,6 +7,7 @@ import json
 from .. import crud, models, schemas
 from ..database import get_db
 from ..auth import get_current_user
+from ..utils.material_checker import check_materials_for_work, reserve_materials_for_gpr_work, update_material_usage, initialize_material_stocks
 
 router = APIRouter(
     prefix="/api/gpr",
@@ -32,6 +33,7 @@ def get_gpr_records(
 @router.post("/records", response_model=schemas.GPRRecord)
 def create_gpr_record(
     record: schemas.GPRRecordCreate,
+    check_materials: bool = True,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -57,6 +59,13 @@ def create_gpr_record(
     db.add(db_record)
     db.commit()
     db.refresh(db_record)
+    
+    # Проверяем наличие материалов для выполнения работ
+    if check_materials:
+        material_check_result = check_materials_for_work(db, db_record.id)
+        if material_check_result.get("needs_order"):
+            print(f"Предупреждение: для выполнения работ по записи {db_record.id} необходимо заказать материалы")
+    
     return db_record
 
 
@@ -89,6 +98,12 @@ def update_gpr_record(
         
         update_data['volume_remainder'] = volume_remainder
         update_data['progress'] = progress
+        
+        # Если увеличивается объем работ, проверяем наличие материалов
+        if 'volume_plan' in update_data and volume_plan > db_record.volume_plan:
+            material_check_result = check_materials_for_work(db, record_id)
+            if material_check_result.get("needs_order"):
+                print(f"Предупреждение: для выполнения увеличенного объема работ по записи {record_id} необходимо заказать материалы")
     
     # Если обновляются ежедневные данные, преобразуем в JSON
     if 'daily_data' in update_data:
@@ -118,6 +133,72 @@ def delete_gpr_record(
     db.delete(record)
     db.commit()
     return {"message": "Запись ГПР успешно удалена"}
+
+
+@router.post("/records/{record_id}/check-materials")
+def check_materials_for_gpr_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Проверить наличие материалов для выполнения работ по ГПР записи
+    """
+    result = check_materials_for_work(db, record_id)
+    return result
+
+
+@router.post("/records/{record_id}/reserve-materials")
+def reserve_materials_for_gpr_record(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Зарезервировать материалы для выполнения работ по ГПР записи
+    """
+    success = reserve_materials_for_gpr_work(db, record_id)
+    if success:
+        return {"message": "Материалы успешно зарезервированы", "success": True}
+    else:
+        return {"message": "Не удалось зарезервировать материалы", "success": False}
+
+
+@router.post("/records/{record_id}/update-fact")
+def update_gpr_fact(
+    record_id: int,
+    volume_fact: float,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """
+    Обновить фактический объем выполненных работ и использовать материалы
+    """
+    db_record = crud.get_gpr_record(db, record_id=record_id)
+    if not db_record:
+        raise HTTPException(status_code=404, detail="Запись ГПР не найдена")
+    
+    # Проверяем, чтобы новый объем не превышал план
+    if volume_fact > db_record.volume_plan:
+        raise HTTPException(status_code=400, detail="Фактический объем не может превышать плановый")
+    
+    # Вычисляем разницу между старым и новым значением
+    volume_diff = volume_fact - db_record.volume_fact
+    
+    # Обновляем запись
+    db_record.volume_fact = volume_fact
+    db_record.volume_remainder = db_record.volume_plan - db_record.volume_fact
+    if db_record.volume_plan > 0:
+        db_record.progress = round((db_record.volume_fact / db_record.volume_plan) * 100, 2)
+    
+    db.commit()
+    db.refresh(db_record)
+    
+    # Обновляем использование материалов
+    if volume_diff > 0:
+        update_material_usage(db, record_id, volume_diff)
+    
+    return db_record
 
 
 @router.post("/weekly-report")

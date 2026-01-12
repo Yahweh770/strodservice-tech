@@ -10,3 +10,9 @@ from .documents import (
     DocumentShipment, DocumentShipmentCreate, DocumentShipmentUpdate,
     DocumentReturn, DocumentReturnCreate, DocumentReturnUpdate
 )
+from .files import (
+    FileCategory, FileCategoryCreate, FileCategoryUpdate,
+    UploadedFile, UploadedFileCreate, UploadedFileUpdate,
+    MaterialRequest, MaterialRequestCreate, MaterialRequestUpdate,
+    MaterialStock, MaterialStockCreate, MaterialStockUpdate
+)
