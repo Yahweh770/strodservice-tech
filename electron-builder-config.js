@@ -19,11 +19,15 @@ module.exports = {
       from: 'src/backend-python/',
       to: 'backend-python/',
       filter: ['**/*', '!__pycache__', '!*.log']
+    },
+    {
+      from: 'src/frontend/build/',
+      to: 'frontend-build/'
     }
   ],
   win: {
     target: 'nsis',
-    icon: 'assets/icon.ico' || 'src/frontend/public/favicon.ico'
+    icon: 'assets/icon.ico'
   },
   nsis: {
     oneClick: false,

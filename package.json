@@ -10,9 +10,10 @@
     "build:frontend": "cd src/frontend && npm run build",
     "build:desktop": "npm run build-frontend && npm run start-electron",
     "build-frontend": "cd src/frontend && npm run build",
-    "start-electron": "electron .",
+    "prepackage-electron": "npm run build-frontend",
     "package-electron": "electron-builder --dir",
-    "dist-electron": "electron-builder --config electron-builder-config.js"
+    "dist-electron": "electron-builder --config electron-builder-config.js",
+    "postinstall": "cd src/frontend && npm install"
   },
   "keywords": [
     "construction",

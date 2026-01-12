@@ -1,160 +1,84 @@
 ```
 # Dependencies
 node_modules/
+src/frontend/node_modules/
 
-# Build artifacts
-dist/
-build/
-target/
+# Build outputs
+/dist/
+/out/
+/dist-electron/
+/src/frontend/build/
+*.egg-info/
+
+# Electron
+release/
+electron-builder/
+electron-builder-config.js
+!electron-builder-config.js
+
+# Environment specific
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.py.class
-*.py.obj
+.Python
+*.so
+.pytest_cache/
+.python-version
+src/backend-python/__pycache__/
 
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
+# Runtime
+.pnp
+.pnp.js
 
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
-.directory
-*.nib
-
-# Environment variables
-.env
-.env.local
-*.env
-.env.*
-
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
-
-# IDE specific
+# IDE
 .vscode/
 .idea/
-*.iml
-*.ipr
-*.iws
-.settings/
-.project
+*.swp
+*.swo
+*~
 
-# Compression
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
-# Testing
-.pytest_cache/
-.mypy_cache/
-.nyc_output/
-coverage.xml
-
-# Distribution / packaging
-.Python
-*.egg-info/
-.eggs/
-.installed.cfg
-*.egg
-
-# MyPy
-.mypy_cache/
-
-# Gradle
-.gradle/
-
-# Rust
-Cargo.lock
-target/
-
-# Go
-*.out
-*.exe
-
-# Java
-*.class
-*.jar
-*.war
-*.ear
-hs_err_pid*
-
-# C/C++
-*.o
-*.obj
-*.so
-*.a
-*.dylib
-*.dll
-*.exe
-
-# Node.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Bower
-bower_components/
-
-# Composer
-vendor/
-
-# Webpack
-webpack.config.js
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-build/
-
-# Doxygen
-doc/
-
-# Julia
-julia-*/
-
-# Zig
-zig*/
+# System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 ```

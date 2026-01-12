@@ -86,20 +86,80 @@ function createWindow() {
     },
   });
 
-  // Проверяем наличие собранного фронтенда
+  // Определяем путь к собранному фронтенду
+  // В режиме разработки используем dev-сервер, в продакшене - сборку
   const frontendBuildPath = path.join(__dirname, 'src', 'frontend', 'build', 'index.html');
   const fs = require('fs');
   
+  // Если приложение запущено из собранного дистрибутива, __dirname будет в папке resources/app
+  // В этом случае нужно использовать другой путь к файлам
+  const appPath = path.dirname(require.main.filename);
+  const packagedFrontendPath = path.join(appPath, '..', 'resources', 'app', 'src', 'frontend', 'build', 'index.html');
+  
   if (fs.existsSync(frontendBuildPath)) {
-    // Загружаем собранный React-приложение
+    // Загружаем собранный React-приложение из стандартного пути
     mainWindow.loadFile(frontendBuildPath);
+  } else if (fs.existsSync(packagedFrontendPath)) {
+    // Загружаем собранный React-приложение из пути в упакованном приложении
+    mainWindow.loadFile(packagedFrontendPath);
   } else {
-    // Если сборки нет, используем dev-сервер или локальный HTML
-    mainWindow.loadURL('http://localhost:3000'); // Предполагаем, что запущен dev-сервер
+    // Если сборки нет, проверяем, запущен ли dev-сервер
+    // Иначе показываем сообщение об ошибке
+    checkDevServer()
+      .then(() => {
+        mainWindow.loadURL('http://localhost:3000');
+      })
+      .catch(() => {
+        // Показываем простую HTML-страницу с сообщением об ошибке
+        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Ошибка загрузки приложения</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .error { color: #d32f2f; }
+              </style>
+            </head>
+            <body>
+              <h1 class="error">Ошибка загрузки фронтенда</h1>
+              <p>Фронтенд-приложение не найдено. Пожалуйста, убедитесь, что выполнена сборка React-приложения.</p>
+              <p>Выполните команду: npm run build-frontend</p>
+            </body>
+          </html>
+        `)}`);
+      });
   }
 
   mainWindow.setBackgroundColor('#f0f0f0');
   // mainWindow.webContents.openDevTools();
+}
+
+// Функция для проверки доступности dev-сервера
+async function checkDevServer() {
+  return new Promise((resolve, reject) => {
+    const http = require('http');
+    const options = {
+      host: 'localhost',
+      port: 3000,
+      timeout: 5000,
+      path: '/'
+    };
+
+    const request = http.request(options, (res) => {
+      if (res.statusCode === 200) {
+        resolve();
+      } else {
+        reject(new Error(`Dev server responded with status ${res.statusCode}`));
+      }
+    });
+
+    request.on('error', (err) => {
+      reject(err);
+    });
+
+    request.end();
+  });
 }
 
 app.whenReady().then(() => {
