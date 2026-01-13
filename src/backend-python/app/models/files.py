@@ -92,10 +92,9 @@ class MaterialStock(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Связи
-    material = relationship("Material", back_populates="stock")
+    material = relationship("Material", back_populates="stocks")
 
 
 # Add back_populates to the Material model relationships
 FileCategory.files = relationship("UploadedFile", back_populates="category")
-Material.requests = relationship("MaterialRequest", back_populates="material")
-Material.stocks = relationship("MaterialStock", back_populates="material")
+# We'll set up Material relationships separately to avoid circular reference issues

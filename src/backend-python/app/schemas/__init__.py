@@ -24,3 +24,8 @@ from .work_session import (
     WorkSessionBase, WorkSessionCreate, WorkSessionEnd, WorkSessionResponse,
     WorkSessionSummary, EmployeeWithWorkInfo
 )
+from .construction_remarks import (
+    ConstructionRemark, ConstructionRemarkCreate, ConstructionRemarkUpdate, ConstructionRemarkWithDetails,
+    RemarkPhoto, RemarkPhotoCreate, RemarkPhotoUpdate,
+    RemarkHistory, RemarkHistoryCreate, RemarkStatus
+)

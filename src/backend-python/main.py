@@ -9,6 +9,7 @@ from app.api.document_routes import router as document_router
 from app.api.file_routes import router as file_router
 from app.api.auth_routes import router as auth_router
 from app.api.work_session_routes import router as work_session_router
+from app.api.construction_remarks_routes import router as construction_remarks_router
 
 # Initialize templates
 templates = Jinja2Templates(directory="templates")
@@ -86,6 +87,9 @@ app.include_router(auth_router)
 
 # Подключение маршрутов рабочих сессий
 app.include_router(work_session_router)
+
+# Подключение маршрутов замечаний от строительного контроля
+app.include_router(construction_remarks_router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
