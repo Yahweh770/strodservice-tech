@@ -24,7 +24,7 @@ import {
   GPRRecord as GPRRecordType,
   WeeklyReportData,
   WORK_TYPE_OPTIONS
-} from '../../../../shared/types/gpr';
+} from '@shared/types/gpr';
 
 interface Customer {
   id: string;

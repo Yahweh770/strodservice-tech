@@ -6,7 +6,7 @@ import {
   GenerateWeeklyReportRequest,
   WeeklyReportData,
   WORK_TYPE_OPTIONS
-} from '../../shared/types/gpr';
+} from '@shared/types/gpr';
 
 // Mock-данные для демонстрации
 const mockGPRRecords: GPRRecord[] = [
