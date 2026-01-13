@@ -9,8 +9,43 @@ import subprocess
 import os
 from pathlib import Path
 
+def check_dependencies():
+    """Check if required Python packages are installed."""
+    required_packages = [
+        "fastapi",
+        "uvicorn",
+        "sqlalchemy",
+        "pydantic",
+        "pyjwt",
+        "passlib",
+        "alembic"
+    ]
+    
+    missing_packages = []
+    for package in required_packages:
+        try:
+            __import__(package.replace("-", "_"))
+        except ImportError:
+            missing_packages.append(package)
+    
+    if missing_packages:
+        print("Warning: Missing required Python packages:")
+        for pkg in missing_packages:
+            print(f"  - {pkg}")
+        print("\nTo install dependencies quickly from vendor directory:")
+        print("  bash install-vendor-deps.sh")
+        print("Or:")
+        print("  pip install -r requirements.txt")
+        print()
+        return False
+    
+    return True
+
 def start_backend():
     """Start the Python FastAPI backend server."""
+    if not check_dependencies():
+        return False
+    
     backend_path = Path(__file__).parent / "src" / "backend-python"
     if not backend_path.exists():
         print(f"Backend directory not found: {backend_path}")
