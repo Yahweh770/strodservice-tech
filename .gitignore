@@ -2,12 +2,12 @@
 # Build artifacts
 build/
 dist/
+*.o
+*.obj
 *.exe
 *.dll
 *.so
 *.a
-*.o
-*.obj
 *.out
 
 # Dependencies
