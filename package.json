@@ -13,7 +13,8 @@
     "prepackage-electron": "npm run build-frontend",
     "package-electron": "electron-builder --dir",
     "dist-electron": "electron-builder --config electron-builder-config.js",
-    "postinstall": "cd src/frontend && npm install"
+    "postinstall": "cd src/frontend && npm install",
+    "install-vendor": "bash install-vendor-deps.sh"
   },
   "keywords": [
     "construction",

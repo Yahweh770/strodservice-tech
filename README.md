@@ -116,14 +116,21 @@
 
 ### Установка и запуск
 
-#### Вариант 1: Сборка готового приложения (рекомендуется)
+#### Вариант 1: Быстрая установка с готовыми зависимостями (рекомендуется)
 
-1. **Windows:**
+1. Установите зависимости из vendor директории:
+   ```bash
+   npm run install-vendor
+   # или
+   bash install-vendor-deps.sh
+   ```
+
+2. **Windows:**
    ```bash
    double-click build-release.bat
    ```
    
-2. **Linux/macOS:**
+3. **Linux/macOS:**
    ```bash
    chmod +x build-release.sh
    ./build-release.sh
@@ -150,6 +157,14 @@
    npm run start:frontend # во втором терминале
    npm run start-electron # в третьем терминале
    ```
+
+#### Проверка установки
+
+Вы можете проверить правильность установки всех компонентов:
+
+```bash
+python verify-installation.py
+```
 
 ---
 
