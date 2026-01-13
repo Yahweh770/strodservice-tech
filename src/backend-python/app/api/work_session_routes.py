@@ -6,7 +6,7 @@ from datetime import date
 from .. import crud_work_session, schemas
 from ..auth import get_current_user, get_current_active_user
 from ..database import get_db
-from ..crud_user import get_user_by_id
+from ..crud_user import get_user
 
 router = APIRouter(prefix="/work-sessions", tags=["work-sessions"])
 

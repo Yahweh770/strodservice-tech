@@ -9,9 +9,8 @@ let pythonProcess;
 // Запуск Python-сервера
 function startPythonBackend() {
   const pythonPath = path.join(__dirname, 'src', 'backend-python');
-  const mainPyPath = path.join(pythonPath, 'main.py');
   
-  pythonProcess = spawn('python', [mainPyPath], {
+  pythonProcess = spawn('python', ['-c', 'import uvicorn; from main import app; uvicorn.run(app, host="127.0.0.1", port=8000)'], {
     cwd: pythonPath,
     env: { ...process.env, PYTHONPATH: pythonPath }
   });
