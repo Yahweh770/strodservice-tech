@@ -3,58 +3,69 @@ chcp 65001
 title Build Script
 
 echo ========================================
-echo Сборка проекта СТРОД-СЕРВИС ТЕХНОЛОДЖИ
+echo Building Project STROD-SERVICE TECHNOLOGY
 echo ========================================
 echo.
 
-REM Проверяем Git
+REM Check Git
 git --version >nul 2>&1 || (
-    echo ОШИБКА: Git не найден. Убедитесь, что Git установлен.
+    echo ERROR: Git not found. Make sure Git is installed.
     pause
     exit /b 1
 )
 
-REM Проверяем Node.js
+REM Check Node.js
 node --version >nul 2>&1 || (
-    echo ОШИБКА: Node.js не найден. Убедитесь, что Node.js установлен.
+    echo ERROR: Node.js not found. Make sure Node.js is installed.
     pause
     exit /b 1
 )
 
-REM Проверяем Python
+REM Check Python
 python --version >nul 2>&1 || (
-    echo ОШИБКА: Python не найден. Убедитесь, что Python установлен.
+    echo ERROR: Python not found. Make sure Python is installed.
     pause
     exit /b 1
 )
 
-echo Установка зависимостей...
+echo Installing dependencies...
 cd /d "%~dp0"
 
-REM Устанавливаем npm зависимости
+REM Install npm dependencies
 call npm install --no-audit --no-fund
 
-REM Устанавливаем Python зависимости
-pip install -r requirements.txt
+REM Install Python dependencies
+if exist requirements.txt (
+    pip install -r requirements.txt
+)
 
-REM Устанавливаем vendor зависимости
+REM Install vendor dependencies
 call npm run install-vendor
 
-echo Сборка Electron-приложения...
-cd electron-app
-call npm install --no-audit --no-fund
-call npm run build
+echo Building Electron application...
+if exist electron-app (
+    cd electron-app
+    call npm install --no-audit --no-fund
+    call npm run build
+    cd ..
+)
 
-echo Сборка Desktop-приложения...
-cd ../desktop-app
-call npm install --no-audit --no-fund
-call npm run build
+echo Building Desktop application...
+if exist desktop-app (
+    cd desktop-app
+    call npm install --no-audit --no-fund
+    call npm run build
+    cd ..
+)
 
-echo Сборка Frontend...
-cd ../src/frontend
-call npm install --no-audit --no-fund
-call npm run build
+echo Building Frontend...
+if exist src/frontend (
+    cd src/frontend
+    call npm install --no-audit --no-fund
+    call npm run build
+    cd ../..
+)
 
 echo.
-echo === Сборка завершена ===
+echo === Build completed ===
 pause
