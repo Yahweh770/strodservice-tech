@@ -27,7 +27,19 @@ if not exist "release" mkdir "release"
 
 echo 1. Обновление зависимостей...
 cd /d "%~dp0"
-npm install
+
+REM Проверяем наличие vendor-зависимостей и используем их, если доступны
+if exist "node_modules" (
+    echo Используем существующие зависимости...
+) else (
+    if exist "vendor\node_modules" (
+        echo Используем vendor-зависимости для npm...
+        mklink /D "node_modules" "vendor\node_modules"
+    ) else (
+        echo Устанавливаем npm зависимости...
+        npm install
+    )
+)
 
 if %ERRORLEVEL% neq 0 (
     echo ОШИБКА: Не удалось установить зависимости.
@@ -38,11 +50,23 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo 2. Обновление зависимостей frontend...
 cd src/frontend
-npm install
+
+if exist "..\..\node_modules" (
+    echo Используем существующие зависимости...
+) else (
+    if exist "..\..\vendor\node_modules" (
+        echo Используем vendor-зависимости для frontend...
+        if exist "node_modules" rmdir /S /Q "node_modules"
+        mklink /D "node_modules" "..\..\vendor\node_modules"
+    ) else (
+        echo Устанавливаем зависимости для frontend...
+        npm install
+    )
+)
 
 if %ERRORLEVEL% neq 0 (
     echo ОШИБКА: Не удалось установить зависимости для frontend.
-    cd ..
+    cd ../..
     pause
     exit /b 1
 )
@@ -53,15 +77,33 @@ npm run build
 
 if %ERRORLEVEL% neq 0 (
     echo ОШИБКА: Не удалось собрать frontend.
-    cd ..
+    cd ../..
     pause
     exit /b 1
 )
 
-cd ..
+cd ../..
 
 echo.
-echo 4. Сборка Electron приложения в папку release...
+echo 4. Установка Python зависимостей...
+
+REM Проверяем наличие vendor-зависимостей для Python
+if exist "vendor\python_packages" (
+    echo Используем vendor-зависимости для Python...
+    pip install --find-links vendor\python_packages -r requirements.txt --no-index
+) else (
+    echo Устанавливаем Python зависимости из интернета...
+    pip install -r requirements.txt
+)
+
+if %ERRORLEVEL% neq 0 (
+    echo ОШИБКА: Не удалось установить Python зависимости.
+    pause
+    exit /b 1
+)
+
+echo.
+echo 5. Сборка Electron приложения в папку release...
 
 REM Запускаем сборку с использованием electron-builder
 npx electron-builder --config electron-builder-config.js --win
@@ -72,10 +114,10 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-REM Перемещаем готовые файлы из release/dist в основную папку release
-if exist "release\dist" (
-    xcopy /E /I /Y "release\dist" "release"
-    rmdir /S /Q "release\dist"
+REM Перемещаем готовые файлы из dist в основную папку release
+if exist "dist" (
+    xcopy /E /I /Y "dist" "release"
+    rmdir /S /Q "dist"
 )
 
 echo.
