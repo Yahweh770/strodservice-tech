@@ -1,6 +1,8 @@
 ```
 # Dependencies
-vendor/
+node_modules/
+vendor/node_modules/
+vendor/python_packages/
 
 # Python
 __pycache__/
@@ -11,22 +13,48 @@ __pycache__/
 env/
 venv/
 .venv/
-.ENV
-.env
-.env.local
-.env.*
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
 .pytest_cache/
 .mypy_cache/
-.coverage
-htmlcov/
-coverage/
 
-# Distribution / packaging
+# Build artifacts
 dist/
 build/
 *.egg-info/
-.installed.cfg
-*.egg
+.eggs/
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.swp
+*.swo
 
 # Compressed files
 *.zip
@@ -51,4 +79,8 @@ build/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+
+# Coverage
+coverage/
+htmlcov/
 ```
