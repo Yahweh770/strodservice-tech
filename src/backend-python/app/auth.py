@@ -69,3 +69,17 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         "is_admin": user_data.get("is_admin", False),
         "permissions": user_data.get("permissions", {})
     }
+
+
+async def get_current_active_user(current_user: dict = Depends(get_current_user)):
+    """Get current active user"""
+    # Check if user is active (you might want to extend this logic)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # You could add additional checks here, e.g., checking if the user is active in database
+    return current_user
