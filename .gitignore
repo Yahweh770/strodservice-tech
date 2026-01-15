@@ -1,40 +1,58 @@
 ```
-# Build artifacts and distributions
-build/
-dist/
-*.spec
+# Dependencies
+node_modules/
 
-# Python compiled files
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-
-# PyInstaller specific
-*.toc
-*.pkg
-*.pyz
-warn-*.txt
-xref-*.html
-localpycs/
-
-# Logs and temporary files
+# Logs and temp files
 *.log
 *.tmp
-*.swp
 
-# Environment files
+# Environment
 .env
 .env.local
 *.env.*
 
-# Editors and IDEs
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Build outputs
+dist/
+build/
+target/
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.MF
+tags
+TAGS
+ID
+GTAGS
+GRTAGS
+GSYMS
+GPATH
 ```
