@@ -1,3 +1,40 @@
 ```
-.github/workflows/release-on-push.yml.disabled
+# Build artifacts and distributions
+build/
+dist/
+*.spec
+
+# Python compiled files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# PyInstaller specific
+*.toc
+*.pkg
+*.pyz
+warn-*.txt
+xref-*.html
+localpycs/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```

@@ -18,25 +18,29 @@ echo Installing dependencies...
 cd /d "%~dp0"
 
 REM Install Python dependencies
+python -m pip install --upgrade pip
+pip install pyinstaller
 if exist requirements.txt (
     echo Installing Python dependencies...
-    pip install --upgrade pip
     pip install -r requirements.txt
 )
 
-REM Install PyInstaller if not already installed
-pip install pyinstaller
-
-REM Check if WSL is available and build-pyinstaller.sh exists
-where wsl >nul 2>&1 && if exist build-pyinstaller.sh (
-    echo Building executable using WSL script...
-    wsl chmod +x build-pyinstaller.sh
-    wsl ./build-pyinstaller.sh
-) || (
-    echo Building executable with PyInstaller...
-    REM Create the executable from the main document tracking system
-    pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --hidden-import=sqlite3 --clean main.py -n doc_tracking_system.exe
+REM Check if main.py exists
+if not exist "main.py" (
+    echo File main.py not found!
+    pause
+    exit /b 1
 )
+
+REM Create empty database if it doesn't exist
+if not exist "pto_docs.db" (
+    echo Creating empty database...
+    type nul > pto_docs.db
+)
+
+REM Build executable with PyInstaller
+echo Building executable with PyInstaller...
+pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --hidden-import=sqlite3 --clean main.py -n doc_tracking_system
 
 if %ERRORLEVEL% EQU 0 (
     echo.
