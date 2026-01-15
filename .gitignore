@@ -1,50 +1,48 @@
-```markdown
-# Configuration files
-.env
-.env.local
-.env.*
-
-# Dependencies
-node_modules/
-.venv/
-venv/
-__pycache__/
-*.egg-info/
+```
+# Build artifacts
+*.pyc
+*.class
+*.o
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
 dist/
 build/
 target/
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
 .gradle/
 
-# Logs
-*.log
-
-# Editor/IDE
+# Editors/IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# OS
+# System
 .DS_Store
 Thumbs.db
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
-
-# Python specific
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-
-# Testing
-.pytest_cache/
-.mypy_cache/
 
 # Compressed files
 *.zip
@@ -65,8 +63,4 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 ```
