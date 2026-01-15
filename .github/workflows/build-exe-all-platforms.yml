@@ -1,0 +1,58 @@
+name: Build EXE for All Platforms on Every Change
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-exe:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies (Linux/macOS)
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      shell: bash
+      if: runner.os != 'Windows'
+      
+    - name: Install dependencies (Windows)
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        if (Test-Path "requirements.txt") { pip install -r requirements.txt }
+      shell: pwsh
+      if: runner.os == 'Windows'
+        
+    - name: Build EXE with PyInstaller (Linux/macOS)
+      run: |
+        chmod +x build-pyinstaller.sh
+        ./build-pyinstaller.sh
+      shell: bash
+      if: runner.os != 'Windows'
+      
+    - name: Build EXE with PyInstaller (Windows)
+      run: |
+        .\build-release.bat
+      shell: pwsh
+      if: runner.os == 'Windows'
+          
+    - name: Upload EXE artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: doc-tracking-system-exe-${{ runner.os }}
+        path: dist/

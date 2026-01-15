@@ -1,0 +1,84 @@
+name: Release on Push
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Получаем всю историю коммитов для генерации номера версии
+        
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Run PyInstaller build script
+      run: |
+        chmod +x build-pyinstaller.sh
+        ./build-pyinstaller.sh
+        
+    - name: Get version
+      id: version
+      run: |
+        # Извлекаем версию из скрипта или генерируем автоматически
+        VERSION=$(git describe --tags --always --first-parent)
+        if [[ ! $VERSION =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+          # Если тег не найден, используем формат v0.1.0 + номер коммита
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          VERSION="v0.$((COMMIT_COUNT / 100)).$((COMMIT_COUNT % 100))"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const { data } = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: '${{ steps.version.outputs.version }}',
+            name: 'Release ${{ steps.version.outputs.version }}',
+            draft: false,
+            prerelease: false
+          });
+          core.setOutput('id', data.id);
+          core.setOutput('upload_url', data.upload_url);
+        
+    - name: Upload Release Asset
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs');
+          const { data } = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ steps.create_release.outputs.id }},
+            data: fs.readFileSync('./dist/doc_tracking_system'),
+            headers: {
+              'content-type': 'application/octet-stream',
+              'content-length': fs.statSync('./dist/doc_tracking_system').size
+            },
+            name: 'doc_tracking_system'
+          });
