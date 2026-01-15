@@ -65,6 +65,19 @@ def start_backend():
         print("uvicorn not found. Please install it with: pip install uvicorn[standard]")
         return False
 
+
+def start_doc_tracking_system():
+    """Start the document tracking system UI"""
+    try:
+        # Import и запуск системы учета документов
+        from doc_tracking_system import run_cli_interface
+        run_cli_interface()
+        return True
+    except ImportError as e:
+        print(f"Error importing document tracking system: {e}")
+        print("Make sure all dependencies are installed.")
+        return False
+
 def show_help():
     """Show help information."""
     print("""
@@ -74,21 +87,24 @@ StrodService Project Manager
 Usage: python main.py [command]
 
 Commands:
-    backend     - Start the Python FastAPI backend server
-    help        - Show this help message
+    backend         - Start the Python FastAPI backend server
+    doc-tracker     - Start the document tracking system
+    help            - Show this help message
     """)
     return True
 
 def main():
     """Main entry point."""
     if len(sys.argv) < 2:
-        print("Please specify a command. Use 'help' for available commands.")
-        return 1
+        # Если нет аргументов, запускаем систему учета документов по умолчанию
+        return 0 if start_doc_tracking_system() else 1
     
     command = sys.argv[1].lower()
     
     if command == "backend":
         return 0 if start_backend() else 1
+    elif command == "doc-tracker":
+        return 0 if start_doc_tracking_system() else 1
     elif command == "help":
         return 0 if show_help() else 1
     else:
