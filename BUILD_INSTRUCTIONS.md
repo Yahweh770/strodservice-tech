@@ -7,14 +7,20 @@ This project provides a document tracking system for managing sent and received 
 
 ### Prerequisites
 - Python 3.8+
-- Windows OS (for the batch file method)
 
-### Method 1: Using the Batch File (Windows)
-1. Double-click on `build-release.bat`
+### Method 1: Using the Shell Script (Linux/macOS) or Batch File (Windows)
+1. Make the script executable and run it (Linux/macOS):
+   ```bash
+   chmod +x build-pyinstaller.sh
+   ./build-pyinstaller.sh
+   ```
+   
+   Or double-click on `build-release.bat` (Windows)
+
 2. The script will:
    - Install required Python dependencies
    - Install PyInstaller
-   - Build the executable as `doc_tracking_system.exe`
+   - Build the executable as `doc_tracking_system` (Linux/macOS) or `doc_tracking_system.exe` (Windows)
    - Place the executable in the `dist/` folder
 
 ### Method 2: Manual Build Process
@@ -26,6 +32,9 @@ This project provides a document tracking system for managing sent and received 
    ```bash
    pyinstaller --onefile --console --add-data "pto_docs.db;." --add-data "assets/icon.ico;assets" --hidden-import=sqlite3 --clean doc_tracking_system.py -n doc_tracking_system
    ```
+
+Note: On Linux/macOS systems, the executable will be named `doc_tracking_system` (without .exe extension), 
+while on Windows it will be named `doc_tracking_system.exe`.
 
 ## Running the Application
 

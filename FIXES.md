@@ -24,6 +24,14 @@
   - Created comprehensive `.gitignore` file to exclude unnecessary files
   - Set up proper tracking for source code while excluding build artifacts
 
+### 4. GitHub Actions Issue with Executable Name
+- **Problem**: GitHub Actions failed when trying to upload `./dist/doc_tracking_system.exe` on Linux, where PyInstaller creates executable without `.exe` extension
+- **Solution**:
+  - Updated `.github/workflows/release-on-push.yml` to use correct filename for Linux systems:
+    - Changed `./dist/doc_tracking_system.exe` to `./dist/doc_tracking_system`
+    - Changed `name: 'doc_tracking_system.exe'` to `name: 'doc_tracking_system'`
+  - Updated documentation to reflect differences in executable names across operating systems
+
 ## Technical Changes Made
 
 ### electron-main.js
@@ -41,6 +49,15 @@
 ### .gitignore
 - Created comprehensive ignore rules for Electron, React, and Python projects
 - Excluded build artifacts, dependencies, and temporary files
+
+### .github/workflows/release-on-push.yml
+- Updated file reference from `./dist/doc_tracking_system.exe` to `./dist/doc_tracking_system`
+- Updated asset name from `doc_tracking_system.exe` to `doc_tracking_system`
+
+### Documentation Updates
+- README.md: Added information about executable name differences across OS
+- DOC_TRACKING_SYSTEM_README.md: Added section about building executable
+- BUILD_INSTRUCTIONS.md: Updated instructions to account for OS-specific executable names
 
 ## How to Build and Run
 
@@ -77,3 +94,4 @@ After implementing these changes:
 2. The build process ensures the frontend is built before packaging
 3. Proper error handling provides clear feedback if components are missing
 4. Git is properly configured to track code changes while ignoring build artifacts
+5. GitHub Actions can successfully find and upload the executable on Linux systems

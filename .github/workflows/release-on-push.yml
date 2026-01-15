@@ -75,10 +75,10 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             release_id: ${{ steps.create_release.outputs.id }},
-            data: fs.readFileSync('./dist/doc_tracking_system.exe'),
+            data: fs.readFileSync('./dist/doc_tracking_system'),
             headers: {
               'content-type': 'application/octet-stream',
-              'content-length': fs.statSync('./dist/doc_tracking_system.exe').size
+              'content-length': fs.statSync('./dist/doc_tracking_system').size
             },
-            name: 'doc_tracking_system.exe'
+            name: 'doc_tracking_system'
           });
