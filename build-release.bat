@@ -27,9 +27,16 @@ if exist requirements.txt (
 REM Install PyInstaller if not already installed
 pip install pyinstaller
 
-echo Building executable with PyInstaller...
-REM Create the executable from the main document tracking system
-pyinstaller --onefile --console --add-data "pto_docs.db;." --add-data "assets/icon.ico;assets" --hidden-import=sqlite3 --clean doc_tracking_system.py -n doc_tracking_system.exe
+REM Check if WSL is available and build-pyinstaller.sh exists
+where wsl >nul 2>&1 && if exist build-pyinstaller.sh (
+    echo Building executable using WSL script...
+    wsl chmod +x build-pyinstaller.sh
+    wsl ./build-pyinstaller.sh
+) || (
+    echo Building executable with PyInstaller...
+    REM Create the executable from the main document tracking system
+    pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --hidden-import=sqlite3 --clean main.py -n doc_tracking_system.exe
+)
 
 if %ERRORLEVEL% EQU 0 (
     echo.
