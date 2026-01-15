@@ -1,6 +1,9 @@
 module.exports = {
   appId: 'com.strodservice.desktop',
   productName: 'Строд-Сервис Технолоджи',
+  copyright: 'Copyright © 2024 Строд-Сервис Технолоджи',
+  company: 'Строд-Сервис Технолоджи',
+  buildVersion: '1.0.0',
   directories: {
     output: 'release/dist'
   },
@@ -27,10 +30,17 @@ module.exports = {
   ],
   win: {
     target: 'nsis',
-    icon: 'assets/icon.ico'
+    icon: 'assets/icon.ico',
+    publisherName: 'Строд-Сервис Технолоджи'
   },
   nsis: {
     oneClick: false,
-    allowToChangeInstallationDirectory: true
+    allowToChangeInstallationDirectory: true,
+    installerIcon: 'assets/icon.ico',
+    uninstallerIcon: 'assets/icon.ico',
+    installerHeaderIcon: 'assets/icon.ico',
+    createDesktopShortcut: true,
+    createStartMenuShortcut: true,
+    shortcutName: 'Строд-Сервис Технолоджи'
   }
 };
