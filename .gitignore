@@ -1,56 +1,50 @@
-```
-# Dependencies
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.py.class
-*.py.o
-*.py.obj
-*.py.out
-*.py.dll
-*.py.so
-*.py.a
+```markdown
+# Configuration files
+.env
+.env.local
+.env.*
 
-# Build artifacts
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.egg-info/
 dist/
 build/
-*.egg-info/
-
-# Virtual environments
-venv/
-.venv/
-env/
-.ENV
+target/
+.gradle/
 
 # Logs
 *.log
 
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Editor files
+# Editor/IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# Coverage reports
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
 coverage/
 htmlcov/
 .coverage
 
-# MyPy cache
-.mypy_cache/
-# Pytest cache
-.pytest_cache/
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Testing
+.pytest_cache/
+.mypy_cache/
 
 # Compressed files
 *.zip
