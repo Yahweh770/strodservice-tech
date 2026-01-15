@@ -1,81 +1,89 @@
-# Electron Application Build Guide
+# Сводка изменений и проекта "Строд-Сервис Технолоджи"
 
-## Overview
-This project demonstrates how to create an Electron application that can be built into a standalone executable (exe) for Windows. The application includes all necessary files and configurations to create a distributable desktop application.
+## Описание проекта
 
-## Project Structure Created
+"Строд-Сервис Технолоджи" - комплексное решение для управления строительными проектами, включающее модули для ведения ГПР, учета исполнительной документации, управления материалами и отслеживания замечаний от строительного контроля. Проект включает в себя десктопное приложение на Electron с Python-бэкендом.
+
+## Основные компоненты
+
+### Архитектура
+- Десктопное приложение на Electron
+- Frontend: React с TypeScript
+- Backend: Python (FastAPI)
+- База данных: SQLite (.db файл)
+- Система аутентификации с JWT-токенами
+
+### Основные функциональные модули
+1. График производства работ (ГПР)
+2. Управление проектами
+3. Документооборот
+4. Справочники
+5. Управление материалами
+6. Отчетность
+7. Учет замечаний от строительного контроля
+
+## Недавно решенная проблема
+
+### Проблема с GitHub Actions
+GitHub Actions не могла успешно завершить задачу по загрузке релизного ассета, потому что скрипт пытался найти файл `./dist/doc_tracking_system.exe`, который не существовал на Linux системах, где исполняются GitHub Actions. PyInstaller в Linux создает исполняемый файл без расширения `.exe`.
+
+### Решенные проблемы
+
+1. **Проблема с GitHub Actions**
+   - Исправлено: Ошибка `ENOENT: нет такого файла или каталога, откройте './dist/doc_tracking_system.exe'`
+   - Причина: В Linux системах PyInstaller создает исполняемый файл без расширения `.exe`
+   - Решение: Обновлен файл `.github/workflows/release-on-push.yml` для использования правильного имени файла
+
+2. **Документация обновлена**
+   - Добавлены инструкции о различиях в именах исполняемых файлов в разных операционных системах
+   - Обновлены руководства по сборке приложения
+
+## Технические изменения
+
+### Файлы, которые были изменены:
+
+1. **`.github/workflows/release-on-push.yml`**
+   - Изменено: `./dist/doc_tracking_system.exe` → `./dist/doc_tracking_system`
+   - Изменено: `name: 'doc_tracking_system.exe'` → `name: 'doc_tracking_system'`
+
+2. **`README.md`**
+   - Добавлена информация о различиях в именах исполняемых файлов в зависимости от ОС
+
+3. **`DOC_TRACKING_SYSTEM_README.md`**
+   - Добавлен раздел о сборке исполняемого файла с помощью PyInstaller
+
+4. **`BUILD_INSTRUCTIONS.md`**
+   - Обновлены инструкции с учетом особенностей разных операционных систем
+
+5. **`ANALYSIS_SUMMARY.md`**
+   - Добавлена информация о решенной проблеме с GitHub Actions
+
+6. **`FIXES.md`**
+   - Добавлена информация о последнем исправлении
+
+## Результат
+
+Теперь GitHub Actions успешно работает на Linux системах и может находить и загружать исполняемый файл, созданный PyInstaller. Проект полностью готов к автоматическому созданию релизов на различных платформах.
+
+## Дополнительная информация
+
+- В Windows системах исполняемый файл будет иметь имя `doc_tracking_system.exe`
+- В Linux/macOS системах исполняемый файл будет иметь имя `doc_tracking_system` (без расширения)
+- Скрипт сборки `build-pyinstaller.sh` корректно работает на всех системах и создает исполняемый файл в папке `dist/`
+
+## Структура проекта
+
 ```
-electron-app/
-├── package.json          # Project configuration and dependencies
-├── main.js              # Main Electron process
-├── index.html           # Application UI
-├── style.css            # Styling
-├── README.md            # Documentation
-├── build.js             # Automated build script
-├── electron-builder-config.js  # Build configuration
-├── test-electron.js     # Verification script
-└── node_modules/        # Dependencies
+/workspace/
+├── src/                    # Исходный код
+│   ├── backend-python/     # Python-бэкенд (FastAPI)
+│   ├── frontend/          # React-фронтенд
+│   ├── shared/            # Общие типы и конфигурации
+│   └── docs/              # Документация
+├── electron-main.js       # Главный процесс Electron
+├── preload.js             # Preload-скрипт безопасности
+├── package.json           # Зависимости и скрипты
+├── build-release.bat      # Скрипт сборки для Windows
+├── build-release.sh       # Скрипт сборки для Linux/macOS
+└── electron-builder-config.js # Конфигурация сборки
 ```
-
-## Files Explained
-
-### package.json
-- Defines the project metadata
-- Specifies Electron and electron-builder as dependencies
-- Includes build and start scripts
-
-### main.js
-- Main entry point for the Electron application
-- Creates the browser window
-- Loads the index.html file
-- Handles application lifecycle
-
-### index.html
-- User interface of the application
-- Contains sample content
-- Links to the CSS file
-
-### style.css
-- Basic styling for the application
-- Responsive design elements
-
-## Building the Application
-
-To build the application into an executable:
-
-1. Navigate to the electron-app directory:
-   ```bash
-   cd /workspace/electron-app
-   ```
-
-2. Install dependencies (if not already installed):
-   ```bash
-   npm install
-   ```
-
-3. Run the build command:
-   ```bash
-   npm run build
-   ```
-
-4. The executable will be created in the `dist/` folder as a Windows installer or portable executable.
-
-## Important Notes
-
-- The build process requires significant system resources (RAM and disk space)
-- The first build takes longer as all Electron dependencies need to be downloaded
-- Once built, the resulting executable can run on any Windows PC without requiring Node.js or other dependencies
-- The application will be bundled with all necessary Electron runtime files
-
-## Troubleshooting
-
-If you encounter issues during the build process:
-
-1. Ensure you have sufficient disk space (at least 2GB free)
-2. Make sure you have enough RAM (at least 2GB available)
-3. Check that your Node.js version is compatible with the Electron version
-4. Verify all required files exist in the project directory
-
-## Distribution
-
-The resulting executable in the `dist/` folder can be distributed to end users who will be able to run it directly on their Windows systems without any additional installations.
