@@ -1,0 +1,63 @@
+name: Release on Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Получаем всю историю коммитов для генерации номера версии
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Run PyInstaller build script
+      run: |
+        chmod +x build-pyinstaller.sh
+        ./build-pyinstaller.sh
+        
+    - name: Get version
+      id: version
+      run: |
+        # Извлекаем версию из скрипта или генерируем автоматически
+        VERSION=$(git describe --tags --always --first-parent)
+        if [[ ! $VERSION =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+          # Если тег не найден, используем формат v0.1.0 + номер коммита
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          VERSION="v0.$((COMMIT_COUNT / 100)).$((COMMIT_COUNT % 100))"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/doc_tracking_system.exe
+        asset_name: doc_tracking_system.exe
+        asset_content_type: application/octet-stream

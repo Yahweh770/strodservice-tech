@@ -244,7 +244,8 @@ class DocTrackingSystem:
         return docs
 
 
-def main():
+def run_cli_interface():
+    """Запуск CLI-интерфейса системы учета документов"""
     system = DocTrackingSystem()
     
     while True:
@@ -323,6 +324,11 @@ def main():
             break
         else:
             print("Некорректный выбор. Пожалуйста, выберите число от 1 до 6.")
+
+
+def main():
+    """Основная функция для запуска CLI-интерфейса"""
+    run_cli_interface()
 
 
 if __name__ == "__main__":
