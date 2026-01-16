@@ -7,7 +7,11 @@ This script allows starting different components of the application.
 import sys
 import subprocess
 import os
+import tempfile
 from pathlib import Path
+
+# Configure log file path dynamically
+log_file_path = os.path.join(os.environ.get("TEMP", tempfile.gettempdir()), "strod_service_log.txt")
 
 
 def check_dependencies():
