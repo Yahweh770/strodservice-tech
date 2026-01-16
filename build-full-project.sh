@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Скрипт для сборки .exe файла с помощью PyInstaller
-# Используется в GitHub Actions для автоматического создания релизов
+# Скрипт для сборки полного проекта StrodService с помощью PyInstaller
+# Собирает основной интерфейс, который может запускать полный функционал
 
 echo
 echo "========================================"
-echo "Сборка .exe файла StrodService с помощью PyInstaller"
+echo "Сборка полного проекта StrodService с помощью PyInstaller"
 echo "========================================"
 echo
 
@@ -36,7 +36,7 @@ if [ ! -f "pto_docs.db" ]; then
 fi
 
 # Создание исполняемого файла с помощью PyInstaller
-echo "Создаем исполняемый файл с полным функционалом..."
+echo "Создаем исполняемый файл для полного проекта..."
 pyinstaller --onefile --console \
     --add-data="pto_docs.db:." \
     --add-data="assets/icon.ico:assets" \
@@ -51,14 +51,14 @@ pyinstaller --onefile --console \
     --hidden-import=uvicorn.protocols.websockets \
     --hidden-import=jinja2 \
     --clean \
-    main.py -n StrodService
+    main.py -n StrodService-Full
 
 if [ $? -eq 0 ]; then
     echo
     echo "========================================"
-    echo "Сборка завершена успешно!"
+    echo "Сборка полного проекта завершена успешно!"
     echo "EXE файл находится в папке dist/"
-    echo "Запустите с командой: ./StrodService full-project"
+    echo "Запустите его с командой: ./StrodService-Full full-project"
     echo "========================================"
     echo
     ls -la dist/

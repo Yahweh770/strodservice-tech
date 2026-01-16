@@ -79,6 +79,38 @@ def start_doc_tracking_system():
         print("Make sure all dependencies are installed.")
         return False
 
+
+def start_full_project():
+    """Start the complete StrodService project with both document tracking and other features."""
+    print("Starting full StrodService project...")
+    
+    # Check if we're in the backend directory structure
+    backend_path = Path(__file__).parent / "src" / "backend-python"
+    if backend_path.exists():
+        os.chdir(backend_path)
+        
+        # Set the PYTHONPATH to include the current directory
+        env = os.environ.copy()
+        env['PYTHONPATH'] = f"{Path(__file__).parent.absolute()}:{env.get('PYTHONPATH', '')}"
+        
+        try:
+            # Run the backend server
+            cmd = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+            print(f"Starting full backend server with command: {' '.join(cmd)}")
+            
+            import subprocess
+            subprocess.run(cmd, check=True, env=env)
+            return True
+        except subprocess.CalledProcessError:
+            print("Failed to start backend server. Make sure all dependencies are installed.")
+            return False
+        except FileNotFoundError:
+            print("uvicorn not found. Please install it with: pip install uvicorn[standard]")
+            return False
+    else:
+        print(f"Backend directory not found: {backend_path}")
+        return False
+
 def show_help():
     """Show help information."""
     print("""
@@ -90,6 +122,7 @@ Usage: python main.py [command]
 Commands:
     backend         - Start the Python FastAPI backend server
     doc-tracker     - Start the document tracking system
+    full-project    - Start the complete StrodService project with full functionality
     help            - Show this help message
     """)
     return True
@@ -106,6 +139,8 @@ def main():
         return 0 if start_backend() else 1
     if command == "doc-tracker":
         return 0 if start_doc_tracking_system() else 1
+    if command == "full-project":
+        return 0 if start_full_project() else 1
     if command == "help":
         return 0 if show_help() else 1
 
