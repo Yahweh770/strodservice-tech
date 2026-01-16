@@ -19,7 +19,8 @@ def check_dependencies():
         "pydantic",
         "pyjwt",
         "passlib",
-        "alembic"
+        "alembic",
+        "python-multipart"
     ]
 
     missing_packages = []
@@ -126,8 +127,64 @@ def start_full_project():
             return True
         except ImportError as e:
             print(f"Failed to import backend: {e}")
-            print("Make sure all dependencies are installed and backend files exist.")
+            print("Attempting to install dependencies and retry...")
+            
+            # Try to install dependencies first
+            try:
+                import subprocess
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(Path(__file__).parent / "requirements.txt")])
+                
+                # Retry import after installing dependencies
+                import main as backend_main
+                import uvicorn
+                
+                print("Starting full backend server from main directory after installing dependencies...")
+                uvicorn.run(backend_main.app, host="0.0.0.0", port=8000)
+                return True
+            except Exception as install_error:
+                print(f"Failed to install dependencies: {install_error}")
+                print("Make sure all dependencies are installed and backend files exist.")
+                return False
+
+
+def start_construction_remarks_system():
+    """Start the construction remarks system"""
+    try:
+        # Try to run the demo construction remarks system
+        import sys
+        backend_dir = str(Path(__file__).parent / "src" / "backend-python")
+        if backend_dir not in sys.path:
+            sys.path.insert(0, backend_dir)
+        
+        from app.schemas.construction_remarks import RemarkStatus
+        from app.crud_construction_remarks import get_construction_remarks
+        
+        print("Construction Remarks System is available as part of the backend service.")
+        print("Run the full project to access the complete construction remarks functionality via web interface.")
+        return True
+    except ImportError as e:
+        print(f"Error importing construction remarks system: {e}")
+        print("Make sure all dependencies are installed.")
+        return False
+
+
+def start_electron_app():
+    """Start the Electron desktop application"""
+    electron_path = Path(__file__).parent / "electron-app"
+    if electron_path.exists():
+        os.chdir(electron_path)
+        try:
+            subprocess.run(["npm", "start"], check=True)
+            return True
+        except FileNotFoundError:
+            print("npm not found. Please install Node.js and npm to run the Electron application.")
             return False
+        except subprocess.CalledProcessError:
+            print("Failed to start Electron application. Make sure all dependencies are installed with 'npm install'.")
+            return False
+    else:
+        print(f"Electron app directory not found: {electron_path}")
+        return False
 
 def show_help():
     """Show help information."""
@@ -138,18 +195,22 @@ StrodService Project Manager
 Usage: python main.py [command]
 
 Commands:
-    backend         - Start the Python FastAPI backend server
-    doc-tracker     - Start the document tracking system
-    full-project    - Start the complete StrodService project with full functionality
-    help            - Show this help message
+    backend             - Start the Python FastAPI backend server
+    doc-tracker         - Start the document tracking system
+    construction-remarks - Start the construction remarks system
+    electron            - Start the Electron desktop application
+    full-project        - Start the complete StrodService project with full functionality
+    help                - Show this help message
+    
+All modules are integrated into the full project backend, accessible via web interface.
     """)
     return True
 
 def main():
     """Main entry point."""
     if len(sys.argv) < 2:
-        # Если нет аргументов, запускаем систему учета документов по умолчанию
-        return 0 if start_doc_tracking_system() else 1
+        # Если нет аргументов, показываем справку
+        return 0 if show_help() else 1
 
     command = sys.argv[1].lower()
 
@@ -157,6 +218,10 @@ def main():
         return 0 if start_backend() else 1
     if command == "doc-tracker":
         return 0 if start_doc_tracking_system() else 1
+    if command == "construction-remarks":
+        return 0 if start_construction_remarks_system() else 1
+    if command == "electron":
+        return 0 if start_electron_app() else 1
     if command == "full-project":
         return 0 if start_full_project() else 1
     if command == "help":
