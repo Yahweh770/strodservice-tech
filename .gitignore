@@ -1,36 +1,44 @@
-```
+```gitignore
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.pyc
+*.pyo
+*.pyd
+*.py~
 
-# Environment
+# Dependencies
+venv/
+.venv/
 .env
 .env.local
 .env.*
 
-# IDE
+# Logs and temp files
+*.log
+*.tmp
+
+# Editors
 .vscode/
 .idea/
 
-# OS
-.DS_Store
-Thumbs.db
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+dist/
+build/
+target/
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
 ```
