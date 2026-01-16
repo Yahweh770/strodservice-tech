@@ -75,6 +75,14 @@ def start_backend():
 def start_doc_tracking_system():
     """Start the document tracking system UI"""
     try:
+        # Add current directory to Python path to ensure proper imports
+        import sys
+        import os
+        from pathlib import Path
+        current_dir = str(Path(__file__).parent)
+        if current_dir not in sys.path:
+            sys.path.insert(0, current_dir)
+        
         # Import и запуск системы учета документов
         from doc_tracking_system import run_cli_interface
         run_cli_interface()
@@ -89,26 +97,31 @@ def start_full_project():
     """Start the complete StrodService project with both document tracking and other features."""
     print("Starting full StrodService project...")
     
+    # Add the project root to the Python path to ensure proper imports
+    project_root = Path(__file__).parent
+    backend_path = project_root / "src" / "backend-python"
+    
+    import sys
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    if str(backend_path) not in sys.path:
+        sys.path.insert(0, str(backend_path))
+    
     # Check if we're in the backend directory structure
-    backend_path = Path(__file__).parent / "src" / "backend-python"
     if backend_path.exists():
         os.chdir(backend_path)
         
         # Set the PYTHONPATH to include the current directory
         env = os.environ.copy()
-        env['PYTHONPATH'] = f"{Path(__file__).parent.absolute()}:{env.get('PYTHONPATH', '')}"
+        env['PYTHONPATH'] = f"{str(project_root)}:{str(backend_path)}:{env.get('PYTHONPATH', '')}"
         
         try:
             # Run the backend server with full reload disabled for production
             cmd = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
             print(f"Starting full backend server with command: {' '.join(cmd)}")
             
-            import subprocess
-            subprocess.run(cmd, check=True, env=env)
-            return True
-        except subprocess.CalledProcessError:
-            print("Failed to start backend server. Make sure all dependencies are installed.")
-            return False
+            result = subprocess.run(cmd, check=False, env=env)  # Changed check=True to check=False to handle graceful shutdowns
+            return result.returncode == 0
         except FileNotFoundError:
             print("uvicorn not found. Please install it with: pip install uvicorn[standard]")
             return False
@@ -123,11 +136,17 @@ def start_full_project():
                 sys.path.insert(0, backend_dir)
             
             # Import and run the main backend application
-            import main as backend_main
-            import uvicorn
+            os.chdir(backend_path)  # Change to backend directory to ensure proper relative imports
+            sys.path.insert(0, str(backend_path))  # Ensure backend path is first
             
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("backend_main", backend_path / "main.py")
+            backend_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(backend_module)
+            
+            import uvicorn
             print("Starting full backend server from main directory...")
-            uvicorn.run(backend_main.app, host="0.0.0.0", port=8000)
+            uvicorn.run(backend_module.app, host="0.0.0.0", port=8000)
             return True
         except ImportError as e:
             print(f"Failed to import backend: {e}")
@@ -139,11 +158,15 @@ def start_full_project():
                 subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(Path(__file__).parent / "requirements.txt")])
                 
                 # Retry import after installing dependencies
-                import main as backend_main
-                import uvicorn
+                os.chdir(backend_path)  # Change to backend directory to ensure proper relative imports
+                import importlib.util
+                spec = importlib.util.spec_from_file_location("backend_main", backend_path / "main.py")
+                backend_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(backend_module)
                 
+                import uvicorn
                 print("Starting full backend server from main directory after installing dependencies...")
-                uvicorn.run(backend_main.app, host="0.0.0.0", port=8000)
+                uvicorn.run(backend_module.app, host="0.0.0.0", port=8000)
                 return True
             except Exception as install_error:
                 print(f"Failed to install dependencies: {install_error}")
@@ -160,8 +183,18 @@ def start_construction_remarks_system():
         if backend_dir not in sys.path:
             sys.path.insert(0, backend_dir)
         
-        from app.schemas.construction_remarks import RemarkStatus
-        from app.crud_construction_remarks import get_construction_remarks
+        # Add the project root to path as well
+        project_root = str(Path(__file__).parent)
+        if project_root not in sys.path:
+            sys.path.insert(0, project_root)
+        
+        # Import with error handling
+        try:
+            from app.schemas.construction_remarks import RemarkStatus
+            from app.crud_construction_remarks import get_construction_remarks
+        except ImportError as schema_error:
+            print(f"Could not import construction remarks modules: {schema_error}")
+            print("These modules are available when running the full backend service.")
         
         print("Construction Remarks System is available as part of the backend service.")
         print("Run the full project to access the complete construction remarks functionality via web interface.")
