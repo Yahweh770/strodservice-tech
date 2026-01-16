@@ -33,7 +33,9 @@ echo "Создаем исполняемый файл..."
 pyinstaller --onefile --console \
     --add-data="pto_docs.db:." \
     --add-data="assets/icon.ico:assets" \
+    --add-data="config.py:." \
     --hidden-import=sqlite3 \
+    --hidden-import=sqlalchemy \
     --clean \
     main.py -n doc_tracking_system
 
