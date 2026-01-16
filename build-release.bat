@@ -40,7 +40,7 @@ if not exist "pto_docs.db" (
 
 REM Build executable with PyInstaller
 echo Building executable with PyInstaller...
-pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --add-data="config.py;." --hidden-import=sqlite3 --hidden-import=sqlalchemy --clean main.py -n StrodService
+pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --add-data="config.py;." --add-data="src;src" --hidden-import=sqlite3 --hidden-import=sqlalchemy --hidden-import=fastapi --hidden-import=uvicorn --hidden-import=uvicorn.protocols --hidden-import=uvicorn.protocols.http --hidden-import=uvicorn.protocols.websockets --hidden-import=jinja2 --hidden-import=cryptography --hidden-import=passlib --hidden-import=pydantic --hidden-import=websockets --clean main.py -n StrodService
 
 if %ERRORLEVEL% EQU 0 (
     echo.

@@ -1,1 +1,39 @@
-(build-full-project.sh is a script file, BUILD_INSTRUCTIONS.md is a markdown documentation file, build-pyinstaller.sh is a build script, and main.py is a Python source file - none of these require ignoring as they are all legitimate project files)
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Build artifacts
+build/
+dist/
+
+# Executables
+StrodService.spec
+nul
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*
+```

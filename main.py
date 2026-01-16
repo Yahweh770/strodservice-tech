@@ -94,8 +94,8 @@ def start_full_project():
         env['PYTHONPATH'] = f"{Path(__file__).parent.absolute()}:{env.get('PYTHONPATH', '')}"
         
         try:
-            # Run the backend server
-            cmd = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+            # Run the backend server with full reload disabled for production
+            cmd = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
             print(f"Starting full backend server with command: {' '.join(cmd)}")
             
             import subprocess
@@ -109,7 +109,25 @@ def start_full_project():
             return False
     else:
         print(f"Backend directory not found: {backend_path}")
-        return False
+        # Fallback: try to run from current directory
+        try:
+            # Import the backend modules directly
+            import sys
+            backend_dir = str(Path(__file__).parent / "src" / "backend-python")
+            if backend_dir not in sys.path:
+                sys.path.insert(0, backend_dir)
+            
+            # Import and run the main backend application
+            import main as backend_main
+            import uvicorn
+            
+            print("Starting full backend server from main directory...")
+            uvicorn.run(backend_main.app, host="0.0.0.0", port=8000)
+            return True
+        except ImportError as e:
+            print(f"Failed to import backend: {e}")
+            print("Make sure all dependencies are installed and backend files exist.")
+            return False
 
 def show_help():
     """Show help information."""

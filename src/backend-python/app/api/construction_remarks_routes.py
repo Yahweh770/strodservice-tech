@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ..database import get_db
 from .. import schemas, crud_construction_remarks, crud
-from ..auth import get_current_user
+from ..auth import get_current_user, get_current_active_user
 
 router = APIRouter(
     prefix="/construction-remarks",
