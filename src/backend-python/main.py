@@ -1,18 +1,30 @@
-from fastapi import FastAPI
+"""
+Main module for the Strod-Service backend application.
+This module defines the FastAPI application and its routes.
+"""
+from contextlib import asynccontextmanager
+from datetime import date
+
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from contextlib import asynccontextmanager
+from sqlalchemy.orm import Session
 
 from app.api import gpr_routes
+from app.api.auth_routes import router as auth_router
+from app.api.construction_remarks_routes import router as construction_remarks_router
 from app.api.document_routes import router as document_router
 from app.api.file_routes import router as file_router
-from app.api.auth_routes import router as auth_router
 from app.api.work_session_routes import router as work_session_router
-from app.api.construction_remarks_routes import router as construction_remarks_router
+from app.auth import get_current_active_user
+from app.database import get_db
+from app import crud_work_session
 
 # Initialize templates
 templates = Jinja2Templates(directory="templates")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,15 +33,15 @@ async def lifespan(app: FastAPI):
     from app.database import SessionLocal
     from app import crud_user, schemas
     import os
-    
+
     db = SessionLocal()
     try:
         initialize_material_stocks(db)
-        
+
         # Создание администратора по умолчанию при запуске приложения
         admin_username = os.getenv("ADMIN_USERNAME", "Yahweh")
         admin_password = os.getenv("ADMIN_PASSWORD", "90vopepi")
-        
+
         # Проверяем, существует ли уже администратор с таким именем
         existing_admin = crud_user.get_user_by_username(db, admin_username)
         if not existing_admin:
@@ -45,11 +57,11 @@ async def lifespan(app: FastAPI):
                 is_admin=True,
                 permissions={"admin": True, "manage_users": True, "manage_documents": True, "manage_materials": True}
             )
-            
+
             try:
                 created_admin = crud_user.create_user(db, admin_user)
                 print(f"Создан администратор: {created_admin.username}")
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 print(f"Ошибка при создании администратора: {e}")
         else:
             print(f"Администратор {existing_admin.username} уже существует")
@@ -58,8 +70,9 @@ async def lifespan(app: FastAPI):
     yield
     # Здесь можно добавить код для завершения работы приложения
 
+
 app = FastAPI(
-    title="Строд-Сервис Технолоджи - Python Backend", 
+    title="Строд-Сервис Технолоджи - Python Backend",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -96,14 +109,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # Web UI routes
-from fastapi import Request, Depends, HTTPException
-from fastapi.responses import HTMLResponse
-from app.auth import get_current_active_user
-from app.database import get_db
-from app import crud_work_session
-from sqlalchemy.orm import Session
-from typing import Optional
-from datetime import date
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -111,7 +116,7 @@ async def dashboard(request: Request, current_user=Depends(get_current_active_us
     work_status = crud_work_session.get_current_work_status(db, current_user.id)
     today_sessions = crud_work_session.get_work_sessions_for_date(db, current_user.id, date.today())
     today_hours = crud_work_session.calculate_total_work_hours(today_sessions)
-    
+
     # Calculate durations for each session
     sessions_with_duration = []
     for session in today_sessions:
@@ -120,9 +125,9 @@ async def dashboard(request: Request, current_user=Depends(get_current_active_us
             'session': session,
             'duration': duration
         })
-    
+
     return templates.TemplateResponse("dashboard.html", {
-        "request": request, 
+        "request": request,
         "user": current_user,
         "work_status": work_status,
         "today_hours": today_hours,
@@ -139,10 +144,10 @@ async def profile(request: Request, current_user=Depends(get_current_active_user
 async def employees(request: Request, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Доступ разрешен только администраторам")
-    
+
     employees = crud_work_session.get_all_employees_with_work_info(db)
     return templates.TemplateResponse("employees.html", {
-        "request": request, 
+        "request": request,
         "user": current_user,
         "employees": employees
     })
