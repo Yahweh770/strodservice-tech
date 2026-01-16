@@ -5,7 +5,7 @@
 
 echo
 echo "========================================"
-echo "Сборка .exe файла с помощью PyInstaller"
+echo "Сборка .exe файла StrodService с помощью PyInstaller"
 echo "========================================"
 echo
 
@@ -37,7 +37,7 @@ pyinstaller --onefile --console \
     --hidden-import=sqlite3 \
     --hidden-import=sqlalchemy \
     --clean \
-    main.py -n doc_tracking_system
+    main.py -n StrodService
 
 if [ $? -eq 0 ]; then
     echo

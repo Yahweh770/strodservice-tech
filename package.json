@@ -1,7 +1,7 @@
 {
-  "name": "strodservice-project",
+  "name": "strodservice",
   "version": "1.0.0",
-  "description": "Строд-Сервис Технолоджи - Project containing backend, frontend and desktop application",
+  "description": "StrodService - Project containing backend, frontend and desktop application",
   "main": "electron-main.js",
   "scripts": {
     "start": "python main.py",
@@ -22,7 +22,7 @@
     "gpr",
     "pto"
   ],
-  "author": "Строд-Сервис Технолоджи",
+  "author": "StrodService",
   "license": "MIT",
   "dependencies": {
     "react-router-dom": "^6.28.0",

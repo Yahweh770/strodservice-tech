@@ -1,6 +1,6 @@
 @echo off
 chcp 65001
-title Build Script - Document Tracking System
+title Build Script - StrodService
 
 echo ========================================
 echo Building Document Tracking System EXE
@@ -40,7 +40,7 @@ if not exist "pto_docs.db" (
 
 REM Build executable with PyInstaller
 echo Building executable with PyInstaller...
-pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --add-data="config.py;." --hidden-import=sqlite3 --hidden-import=sqlalchemy --clean main.py -n doc_tracking_system
+pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --add-data="config.py;." --hidden-import=sqlite3 --hidden-import=sqlalchemy --clean main.py -n StrodService
 
 if %ERRORLEVEL% EQU 0 (
     echo.
