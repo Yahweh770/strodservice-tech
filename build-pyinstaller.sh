@@ -50,6 +50,10 @@ pyinstaller --onefile --console \
     --hidden-import=uvicorn.protocols.http \
     --hidden-import=uvicorn.protocols.websockets \
     --hidden-import=jinja2 \
+    --hidden-import=cryptography \
+    --hidden-import=passlib \
+    --hidden-import=pydantic \
+    --hidden-import=websockets \
     --clean \
     main.py -n StrodService
 
