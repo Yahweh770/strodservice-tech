@@ -17,6 +17,17 @@ class DocTrackingSystem:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
+        # Таблица пользователей для многопользовательского режима
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                full_name TEXT NOT NULL,
+                role TEXT DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
         # Таблица документов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS documents (
@@ -27,7 +38,12 @@ class DocTrackingSystem:
                 issue_date DATE,
                 doc_type TEXT,
                 status TEXT DEFAULT 'в наличии',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_by INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_by INTEGER,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (created_by) REFERENCES users (id),
+                FOREIGN KEY (updated_by) REFERENCES users (id)
             )
         ''')
 
@@ -38,8 +54,10 @@ class DocTrackingSystem:
                 doc_id INTEGER,
                 recipient TEXT NOT NULL,
                 shipment_date DATE NOT NULL,
+                shipped_by INTEGER,
                 notes TEXT,
-                FOREIGN KEY (doc_id) REFERENCES documents (id)
+                FOREIGN KEY (doc_id) REFERENCES documents (id),
+                FOREIGN KEY (shipped_by) REFERENCES users (id)
             )
         ''')
 
@@ -49,16 +67,18 @@ class DocTrackingSystem:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 doc_id INTEGER,
                 return_date DATE NOT NULL,
+                returned_by INTEGER,
                 condition TEXT,
                 notes TEXT,
-                FOREIGN KEY (doc_id) REFERENCES documents (id)
+                FOREIGN KEY (doc_id) REFERENCES documents (id),
+                FOREIGN KEY (returned_by) REFERENCES users (id)
             )
         ''')
 
         conn.commit()
         conn.close()
 
-    def add_document(self, doc_number, doc_title, project_number=None, issue_date=None, doc_type=None):
+    def add_document(self, doc_number, doc_title, project_number=None, issue_date=None, doc_type=None, user_id=None):
         """Добавление нового документа"""
         # Валидация входных данных
         if not doc_number or not doc_title:
@@ -77,14 +97,14 @@ class DocTrackingSystem:
             cursor = conn.cursor()
 
             cursor.execute('''
-                INSERT INTO documents (doc_number, doc_title, project_number, issue_date, doc_type)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (doc_number, doc_title, project_number, issue_date, doc_type))
+                INSERT INTO documents (doc_number, doc_title, project_number, issue_date, doc_type, created_by)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (doc_number, doc_title, project_number, issue_date, doc_type, user_id))
 
             doc_id = cursor.lastrowid
             conn.commit()
 
-            print(f"Документ '{doc_title}' (ID: {doc_id}) успешно добавлен")
+            print(f"Документ '{doc_title}' (ID: {doc_id}) успешно добавлен пользователем {user_id}")
             return doc_id
 
     def get_document_by_id(self, doc_id):
@@ -110,7 +130,8 @@ class DocTrackingSystem:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        # Используем подзапрос для получения последней отправки и возврата для каждого документа
+        # Используем подзапросы для получения последней отправки и возврата для каждого документа
+        # А также информацию о пользователях
         cursor.execute('''
             SELECT
                 d.id,
@@ -120,7 +141,9 @@ class DocTrackingSystem:
                 d.status,
                 (SELECT s.shipment_date FROM shipments s WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as shipment_date,
                 (SELECT s.recipient FROM shipments s WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as recipient,
-                (SELECT r.return_date FROM returns r WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as return_date
+                (SELECT u.full_name FROM shipments s JOIN users u ON s.shipped_by = u.id WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as shipped_by_name,
+                (SELECT r.return_date FROM returns r WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as return_date,
+                (SELECT u.full_name FROM returns r JOIN users u ON r.returned_by = u.id WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as returned_by_name
             FROM documents d
             ORDER BY d.id
         ''')
@@ -130,7 +153,7 @@ class DocTrackingSystem:
 
         return docs
 
-    def ship_document(self, doc_id, recipient, shipment_date=None, notes=None):
+    def ship_document(self, doc_id, recipient, shipment_date=None, notes=None, user_id=None):
         """Отправка документа"""
         # Валидация параметров
         if not isinstance(doc_id, int) or doc_id <= 0:
@@ -171,16 +194,16 @@ class DocTrackingSystem:
 
             # Добавляем запись об отправке
             cursor.execute('''
-                INSERT INTO shipments (doc_id, recipient, shipment_date, notes)
-                VALUES (?, ?, ?, ?)
-            ''', (doc_id, recipient, shipment_date, notes))
+                INSERT INTO shipments (doc_id, recipient, shipment_date, shipped_by, notes)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (doc_id, recipient, shipment_date, user_id, notes))
 
             conn.commit()
 
-            print(f"Документ с ID {doc_id} отправлен получателю '{recipient}'")
+            print(f"Документ с ID {doc_id} отправлен получателю '{recipient}' пользователем {user_id}")
             return True
 
-    def return_document(self, doc_id, condition=None, notes=None):
+    def return_document(self, doc_id, condition=None, notes=None, user_id=None):
         """Возврат документа"""
         return_date = datetime.now().strftime('%Y-%m-%d')
 
@@ -206,14 +229,14 @@ class DocTrackingSystem:
 
         # Добавляем запись о возврате
         cursor.execute('''
-            INSERT INTO returns (doc_id, return_date, condition, notes)
-            VALUES (?, ?, ?, ?)
-        ''', (doc_id, return_date, condition, notes))
+            INSERT INTO returns (doc_id, return_date, returned_by, condition, notes)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (doc_id, return_date, user_id, condition, notes))
 
         conn.commit()
         conn.close()
 
-        print(f"Документ с ID {doc_id} возвращен")
+        print(f"Документ с ID {doc_id} возвращен пользователем {user_id}")
         return True
 
     def search_documents(self, keyword):
@@ -222,6 +245,7 @@ class DocTrackingSystem:
         cursor = conn.cursor()
 
         # Используем подзапросы для получения последней отправки и возврата для каждого документа
+        # А также информацию о пользователях
         cursor.execute('''
             SELECT
                 d.id,
@@ -231,7 +255,9 @@ class DocTrackingSystem:
                 d.status,
                 (SELECT s.shipment_date FROM shipments s WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as shipment_date,
                 (SELECT s.recipient FROM shipments s WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as recipient,
-                (SELECT r.return_date FROM returns r WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as return_date
+                (SELECT u.full_name FROM shipments s JOIN users u ON s.shipped_by = u.id WHERE s.doc_id = d.id ORDER BY s.id DESC LIMIT 1) as shipped_by_name,
+                (SELECT r.return_date FROM returns r WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as return_date,
+                (SELECT u.full_name FROM returns r JOIN users u ON r.returned_by = u.id WHERE r.doc_id = d.id ORDER BY r.id DESC LIMIT 1) as returned_by_name
             FROM documents d
             WHERE d.doc_number LIKE ? OR d.doc_title LIKE ? OR d.project_number LIKE ?
             ORDER BY d.id
@@ -246,6 +272,26 @@ class DocTrackingSystem:
 def run_cli_interface():
     """Запуск CLI-интерфейса системы учета документов"""
     system = DocTrackingSystem()
+    
+    # Регистрируем или авторизуем пользователя
+    print("=== Авторизация ===")
+    username = input("Введите ваше имя пользователя (или создайте новое): ") or "default_user"
+    full_name = input("Введите ваше полное имя: ") or username
+    
+    # Проверяем, существует ли пользователь, если нет - создаем
+    with sqlite3.connect(system.db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        user = cursor.fetchone()
+        
+        if user:
+            user_id = user[0]
+            print(f"Добро пожаловать обратно, {full_name} (ID: {user_id})!")
+        else:
+            cursor.execute('INSERT INTO users (username, full_name) VALUES (?, ?)', (username, full_name))
+            user_id = cursor.lastrowid
+            conn.commit()
+            print(f"Пользователь {full_name} успешно зарегистрирован с ID: {user_id}")
 
     while True:
         print("\n=== Система учета документов ПТО ===")
@@ -266,7 +312,7 @@ def run_cli_interface():
             issue_date = input("Дата выпуска (ГГГГ-ММ-ДД, опционально): ") or None
             doc_type = input("Тип документа (опционально): ") or None
 
-            system.add_document(doc_number, doc_title, project_number, issue_date, doc_type)
+            system.add_document(doc_number, doc_title, project_number, issue_date, doc_type, user_id=user_id)
 
         elif choice == '2':
             print("\n--- Отправка документа ---")
@@ -276,7 +322,7 @@ def run_cli_interface():
                 shipment_date = input("Дата отправки (ГГГГ-ММ-ДД, Enter для сегодня): ") or None
                 notes = input("Примечания (опционально): ") or None
 
-                system.ship_document(doc_id, recipient, shipment_date, notes)
+                system.ship_document(doc_id, recipient, shipment_date, notes, user_id=user_id)
             except ValueError:
                 print("Ошибка: ID документа должен быть числом")
 
@@ -287,7 +333,7 @@ def run_cli_interface():
                 condition = input("Состояние документа (опционально): ") or None
                 notes = input("Примечания (опционально): ") or None
 
-                system.return_document(doc_id, condition, notes)
+                system.return_document(doc_id, condition, notes, user_id=user_id)
             except ValueError:
                 print("Ошибка: ID документа должен быть числом")
 
@@ -296,11 +342,11 @@ def run_cli_interface():
             docs = system.list_documents()
 
             if docs:
-                print(f"{'ID':<5} {'Номер':<15} {'Наименование':<30} {'Проект':<15} {'Статус':<15} {'Отправлен':<12} {'Получатель':<20} {'Возвращен':<12}")
-                print("-" * 130)
+                print(f"{'ID':<5} {'Номер':<15} {'Наименование':<30} {'Проект':<15} {'Статус':<15} {'Отправлен':<12} {'Получатель':<20} {'Отправил':<15} {'Возвращен':<12} {'Вернул':<15}")
+                print("-" * 150)
                 for doc in docs:
-                    doc_id, doc_number, doc_title, project_number, status, shipment_date, recipient, return_date = doc
-                    print(f"{doc_id:<5} {doc_number:<15} {doc_title[:29]:<30} {project_number or '':<15} {status:<15} {shipment_date or '':<12} {recipient or '':<20} {return_date or '':<12}")
+                    doc_id, doc_number, doc_title, project_number, status, shipment_date, recipient, shipped_by_name, return_date, returned_by_name = doc
+                    print(f"{doc_id:<5} {doc_number:<15} {doc_title[:29]:<30} {project_number or '':<15} {status:<15} {shipment_date or '':<12} {recipient or '':<20} {shipped_by_name or '':<15} {return_date or '':<12} {returned_by_name or '':<15}")
             else:
                 print("Документов нет в системе")
 
@@ -310,11 +356,11 @@ def run_cli_interface():
             docs = system.search_documents(keyword)
 
             if docs:
-                print(f"{'ID':<5} {'Номер':<15} {'Наименование':<30} {'Проект':<15} {'Статус':<15} {'Отправлен':<12} {'Получатель':<20} {'Возвращен':<12}")
-                print("-" * 130)
+                print(f"{'ID':<5} {'Номер':<15} {'Наименование':<30} {'Проект':<15} {'Статус':<15} {'Отправлен':<12} {'Получатель':<20} {'Отправил':<15} {'Возвращен':<12} {'Вернул':<15}")
+                print("-" * 150)
                 for doc in docs:
-                    doc_id, doc_number, doc_title, project_number, status, shipment_date, recipient, return_date = doc
-                    print(f"{doc_id:<5} {doc_number:<15} {doc_title[:29]:<30} {project_number or '':<15} {status:<15} {shipment_date or '':<12} {recipient or '':<20} {return_date or '':<12}")
+                    doc_id, doc_number, doc_title, project_number, status, shipment_date, recipient, shipped_by_name, return_date, returned_by_name = doc
+                    print(f"{doc_id:<5} {doc_number:<15} {doc_title[:29]:<30} {project_number or '':<15} {status:<15} {shipment_date or '':<12} {recipient or '':<20} {shipped_by_name or '':<15} {return_date or '':<12} {returned_by_name or '':<15}")
             else:
                 print("Документы не найдены")
 

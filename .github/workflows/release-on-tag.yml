@@ -122,92 +122,13 @@ jobs:
       if: runner.os == 'Linux'  # Only run once to avoid duplicates
       
     - name: Upload Release Assets
-      uses: actions/github-script@v7
-      if: runner.os == 'Linux'  # Only run once to avoid duplicate uploads
+      uses: actions/upload-artifact@v4
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const fs = require('fs');
-          const path = require('path');
-          
-          // Wait a moment to ensure release exists
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          
-          const releaseRef = '${{ github.ref }}';
-          const tagName = releaseRef.startsWith('refs/tags/') ? releaseRef.substring(10) : '${{ steps.get_version.outputs.version }}';
-          
-          try {
-            // Get the release
-            const { data: release } = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: tagName
-            });
-            
-            // Upload all assets from release_assets directory
-            const assetsDir = 'release_assets';
-            if (fs.existsSync(assetsDir)) {
-              const files = fs.readdirSync(assetsDir);
-              
-              for (const file of files) {
-                const filePath = path.join(assetsDir, file);
-                if (fs.statSync(filePath).isFile()) {
-                  console.log(`Uploading ${file}...`);
-                  
-                  await github.rest.repos.uploadReleaseAsset({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    release_id: release.id,
-                    data: fs.readFileSync(filePath),
-                    name: file,
-                    headers: {
-                      'content-type': 'application/octet-stream',
-                      'content-length': fs.statSync(filePath).size
-                    }
-                  });
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Error uploading assets:', error);
-            // Create a new release if one doesn't exist yet
-            const { data: newRelease } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: tagName,
-              name: 'Release ' + tagName,
-              body: 'Automated release build',
-              draft: false,
-              prerelease: false
-            });
-            
-            const assetsDir = 'release_assets';
-            if (fs.existsSync(assetsDir)) {
-              const files = fs.readdirSync(assetsDir);
-              
-              for (const file of files) {
-                const filePath = path.join(assetsDir, file);
-                if (fs.statSync(filePath).isFile()) {
-                  console.log(`Uploading ${file} to new release...`);
-                  
-                  await github.rest.repos.uploadReleaseAsset({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    release_id: newRelease.id,
-                    data: fs.readFileSync(filePath),
-                    name: file,
-                    headers: {
-                      'content-type': 'application/octet-stream',
-                      'content-length': fs.statSync(filePath).size
-                    }
-                  });
-                }
-              }
-            }
-          }
-
-  create-release-manually:
-    name: Create Release (fallback)
+        name: release-assets-${{ runner.os }}
+        path: release_assets/*
+      
+  create-release:
+    name: Create GitHub Release
     needs: build-and-release
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -217,23 +138,34 @@ jobs:
       with:
         fetch-depth: 0
         
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+        
     - name: Get version from tag
       id: get_version
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
         echo "version=${VERSION}" >> $GITHUB_OUTPUT
         
-    - name: Create Release
-      uses: actions/github-script@v7
+    - name: Create Release with Assets
+      uses: softprops/action-gh-release@v2
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const { data } = await github.rest.repos.createRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            tag_name: '${{ steps.get_version.outputs.version }}',
-            name: 'Release ${{ steps.get_version.outputs.version }}',
-            body: 'Full release of StrodService project',
-            draft: false,
-            prerelease: false
-          });
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: Release ${{ steps.get_version.outputs.version }}
+        body: |
+          ## Release ${{ steps.get_version.outputs.version }}
+          
+          ### Changes
+          Automated release build with multi-user support.
+          
+          ### Included Assets
+          - Executables for Windows, Linux, and macOS
+          - Source code archive
+        draft: false
+        prerelease: false
+        files: |
+          artifacts/release-assets-Windows/*.*
+          artifacts/release-assets-Linux/*.*
+          artifacts/release-assets-macOS/*.*

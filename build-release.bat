@@ -40,7 +40,7 @@ if not exist "pto_docs.db" (
 
 REM Build executable with PyInstaller
 echo Building executable with PyInstaller...
-pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --hidden-import=sqlite3 --clean main.py -n doc_tracking_system
+pyinstaller --onefile --console --add-data="pto_docs.db;." --add-data="assets/icon.ico;assets" --add-data="config.py;." --hidden-import=sqlite3 --hidden-import=sqlalchemy --clean main.py -n doc_tracking_system
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -60,6 +60,9 @@ if %ERRORLEVEL% EQU 0 (
     )
     if exist assets\icon.ico (
         copy /Y assets\icon.ico dist\assets\
+    )
+    if exist config.py (
+        copy /Y config.py dist\
     )
     
     echo Files in dist folder:
