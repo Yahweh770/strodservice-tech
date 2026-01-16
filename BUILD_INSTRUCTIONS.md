@@ -1,7 +1,7 @@
-# Document Tracking System - Build Instructions
+# StrodService - Full Project Build Instructions
 
 ## Overview
-This project provides a document tracking system for managing sent and received executive documentation in PTO (Project Technical Office).
+This project provides a comprehensive document tracking system and construction management platform for managing sent and received executive documentation in PTO (Project Technical Office), with additional features for construction remarks and GPR tracking.
 
 ## Building the Executable
 
@@ -20,40 +20,52 @@ This project provides a document tracking system for managing sent and received 
 2. The script will:
    - Install required Python dependencies
    - Install PyInstaller
-   - Build the executable as `doc_tracking_system` (Linux/macOS) or `doc_tracking_system.exe` (Windows)
+   - Build the executable as `StrodService` (Linux/macOS) or `StrodService.exe` (Windows)
    - Place the executable in the `dist/` folder
 
 ### Method 2: Manual Build Process
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   pip install -r src/backend-python/requirements.txt
    ```
 2. Build the executable:
    ```bash
-   pyinstaller --onefile --console --add-data "pto_docs.db;." --add-data "assets/icon.ico;assets" --hidden-import=sqlite3 --clean doc_tracking_system.py -n doc_tracking_system
+   pyinstaller --onefile --console --add-data "pto_docs.db;." --add-data "assets/icon.ico;assets" --add-data "src;src" --hidden-import=sqlite3 --hidden-import=sqlalchemy --hidden-import=fastapi --hidden-import=uvicorn --clean main.py -n StrodService
    ```
 
-Note: On Linux/macOS systems, the executable will be named `doc_tracking_system` (without .exe extension), 
-while on Windows it will be named `doc_tracking_system.exe`.
+Note: On Linux/macOS systems, the executable will be named `StrodService` (without .exe extension), 
+while on Windows it will be named `StrodService.exe`.
 
 ## Running the Application
 
 ### Direct Python Execution
 ```bash
-python doc_tracking_system.py
+python main.py full-project
 ```
 
-### Using the Main Entry Point
+### Using Different Modes
 ```bash
+# Full project with web interface and all features
+python main.py full-project
+
+# Just the backend server
+python main.py backend
+
+# CLI document tracker only
 python main.py doc-tracker
 ```
 
 ## Features
-- Add new documents with number, title, project number, etc.
-- Track document shipments to recipients
-- Record document returns with condition notes
-- Search through all documents
-- View complete document history
+- Complete document tracking system with sending/receiving
+- Web interface via FastAPI
+- Construction remarks management
+- GPR (General Production Records) tracking
+- User authentication and permissions
+- Real-time notifications via WebSockets
+- Material stock management
+- Work session tracking
+- Multi-user support
 
 ## Database
 The application uses SQLite database (`pto_docs.db`) to store all document information locally.
