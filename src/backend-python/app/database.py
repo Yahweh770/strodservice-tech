@@ -6,7 +6,15 @@ import os
 # Получаем URL базы данных из переменных окружения, если доступно
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./strod_service_tech.db")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
+if "postgresql" in DATABASE_URL.lower():
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=20,
+        max_overflow=0,
+        pool_pre_ping=True,
+    )
+else:
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
