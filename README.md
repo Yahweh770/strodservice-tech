@@ -1,23 +1,130 @@
-# StrodService - Комплексное решение для управления строительством
+# Strod-Service Construction Management System
 
-<p align="center">
-  <img src="storservice logo.jpg" alt="Логотип StrodService" width="256">
-</p>
+## Overview
+Strod-Service is a comprehensive construction management system designed for tracking and managing construction documentation and production processes. The system includes modules for document tracking, production scheduling, employee management, and material control.
 
-<p align="center">
-  <strong>Безопасное десктопное приложение с аутентификацией для эффективного управления строительными проектами</strong>
-</p>
+## Features
+- **Document Tracking**: Complete lifecycle management for construction documents
+- **Production Scheduling (GPR)**: Graph-based production planning and tracking
+- **Employee Management**: Time tracking and work session monitoring
+- **Material Control**: Inventory management and consumption tracking
+- **User Authentication**: Role-based access control system
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
-  <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue" alt="Python">
-  <img src="https://img.shields.io/badge/Electron-2B2E3A?style=for-the-badge&logo=electron&logoColor=9FEAF9" alt="Electron">
-  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-</p>
+## New UI Features
+- **Modern Web Interface**: Beautiful, responsive React-based UI built with Material-UI
+- **Document Management Dashboard**: Intuitive forms for adding, sending, and returning documents
+- **Production Schedule Visualization**: Interactive table for tracking work progress
+- **Multi-module Navigation**: Organized sidebar navigation for accessing different system modules
+- **Real-time Updates**: Live data synchronization with backend services
+- **Responsive Design**: Works seamlessly on desktops, tablets, and mobile devices
+- **Interactive Dashboards**: Visual indicators and status tracking for all processes
+- **Comprehensive Reporting**: Detailed reports and analytics for all system activities
 
 ---
 
-## 🚀 Основные возможности
+## Architecture
+- **Frontend**: React + TypeScript + Material-UI
+- **Backend**: FastAPI + SQLAlchemy + PostgreSQL
+- **Authentication**: JWT-based security system
+- **Database**: PostgreSQL with Alembic migrations
+
+## Installation
+
+### Prerequisites
+- Node.js 16+
+- Python 3.8+
+- PostgreSQL
+
+### Backend Setup
+```bash
+cd src/backend-python
+pip install -r requirements.txt
+```
+
+### Frontend Setup
+```bash
+cd src/frontend
+npm install
+```
+
+### Environment Variables
+Create `.env` file in the backend directory:
+```
+DATABASE_URL=postgresql://username:password@localhost/dbname
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+## Running the Application
+
+### Development Mode
+1. Start the backend:
+```bash
+cd src/backend-python
+uvicorn main:app --reload
+```
+
+2. Start the frontend:
+```bash
+cd src/frontend
+npm start
+```
+
+### Production Build
+To create a production build of the frontend:
+```bash
+cd src/frontend
+npm run build
+```
+
+## API Endpoints
+The application provides RESTful APIs for all core functionalities:
+- `/api/auth` - Authentication endpoints
+- `/api/documents` - Document management
+- `/api/gpr` - Production schedule management
+- `/api/users` - User management
+- `/api/work-sessions` - Employee work tracking
+
+## Database Models
+- **Users**: Authentication and authorization
+- **Documents**: Construction document tracking
+- **GPR Records**: Production schedule entries
+- **Work Sessions**: Employee time tracking
+- **Materials**: Inventory and consumption tracking
+
+## Security
+- JWT token-based authentication
+- Password hashing with bcrypt
+- Role-based access control
+- Input validation and sanitization
+
+## Testing
+Run backend tests:
+```bash
+cd src/backend-python
+pytest
+```
+
+Run frontend tests:
+```bash
+cd src/frontend
+npm test
+```
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## 🚀 Additional Information from Original Project
 
 **StrodService** - это современное десктопное приложение, созданное специально для строительных компаний. Оно объединяет в себе мощные функции управления проектами, учета документации и контроля выполнения работ в едином интерфейсе. Приложение также поддерживает многопользовательский режим с использованием PostgreSQL.
 
