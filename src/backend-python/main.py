@@ -5,7 +5,7 @@ This module defines the FastAPI application and its routes.
 from contextlib import asynccontextmanager
 from datetime import date
 
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -21,6 +21,9 @@ from app.api.work_session_routes import router as work_session_router
 from app.auth import get_current_active_user
 from app.database import get_db
 from app import crud_work_session
+from app.websocket_manager import manager
+from app.auth import verify_access_token
+import json
 
 # Initialize templates
 templates = Jinja2Templates(directory="templates")
@@ -106,6 +109,66 @@ app.include_router(construction_remarks_router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# WebSocket routes
+@app.websocket("/ws/{token}")
+async def websocket_endpoint(websocket: WebSocket, token: str):
+    """WebSocket endpoint для реал-тайм уведомлений"""
+    try:
+        # Верифицируем токен
+        payload = verify_access_token(token)
+        user_id = payload.get("user_id")
+        
+        if not user_id:
+            await websocket.close(code=1008, reason="Invalid token")
+            return
+            
+        # Подключаем пользователя к вебсокету
+        await manager.connect(websocket, user_id)
+        
+        try:
+            # Отправляем подтверждение подключения
+            await manager.send_personal_message(
+                json.dumps({"type": "connection", "message": "Connected to server", "user_id": user_id}),
+                websocket
+            )
+            
+            # Основной цикл обработки сообщений
+            while True:
+                # Получаем сообщение от клиента (опционально)
+                data = await websocket.receive_text()
+                
+                # Парсим сообщение
+                try:
+                    message_data = json.loads(data)
+                    message_type = message_data.get("type")
+                    
+                    # В зависимости от типа сообщения, можем обрабатывать по-разному
+                    if message_type == "ping":
+                        await manager.send_personal_message(
+                            json.dumps({"type": "pong", "message": "Pong"}),
+                            websocket
+                        )
+                    elif message_type == "request_user_info":
+                        await manager.send_personal_message(
+                            json.dumps({
+                                "type": "user_info", 
+                                "user_id": user_id,
+                                "connections_count": manager.get_user_connections_count(user_id)
+                            }),
+                            websocket
+                        )
+                        
+                except json.JSONDecodeError:
+                    # Если не удалось распарсить JSON, просто продолжаем
+                    continue
+                    
+        except WebSocketDisconnect:
+            manager.disconnect(websocket)
+            
+    except Exception as e:
+        await websocket.close(code=1008, reason="Authentication failed")
 
 
 # Web UI routes

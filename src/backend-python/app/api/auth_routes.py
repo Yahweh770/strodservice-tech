@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -79,6 +79,80 @@ def login_user(login_data: schemas.UserLogin, db: Session = Depends(database.get
     )
     
     return token_data
+
+
+@router.post("/refresh", response_model=schemas.Token)
+def refresh_token(refresh_token: str = Form(...), db: Session = Depends(database.get_db)):
+    """Обновление access токена с использованием refresh токена"""
+    try:
+        # Проверяем refresh токен
+        payload = auth.verify_refresh_token(refresh_token)
+        
+        # Получаем пользователя из базы данных
+        user_id = payload.get("user_id")
+        user = crud_user.get_user(db, user_id)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Пользователь не найден",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Аккаунт пользователя деактивирован",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Пытаемся преобразовать permissions из строки обратно в словарь
+        permissions_dict = {}
+        try:
+            permissions_dict = json.loads(user.permissions) if user.permissions else {}
+        except (json.JSONDecodeError, TypeError):
+            # Если не получается распарсить, используем пустой словарь
+            permissions_dict = {}
+        
+        # Создаем новый access токен
+        access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = auth.create_access_token(
+            data={
+                "sub": user.username,
+                "user_id": user.id,
+                "is_admin": user.is_admin,
+                "permissions": permissions_dict
+            },
+            expires_delta=access_token_expires
+        )
+        
+        # Возвращаем новый токен (без нового refresh токена для простоты)
+        token_data = schemas.Token(
+            access_token=access_token,
+            token_type="bearer",
+            user=schemas.UserResponse(
+                id=user.id,
+                username=user.username,
+                email=user.email,
+                full_name=user.full_name,
+                position=user.position,
+                department=user.department,
+                is_active=user.is_active,
+                is_admin=user.is_admin,
+                created_at=user.created_at,
+                updated_at=user.updated_at
+            )
+        )
+        
+        return token_data
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный refresh токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @router.post("/logout")
