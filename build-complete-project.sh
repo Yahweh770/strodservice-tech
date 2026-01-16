@@ -35,49 +35,27 @@ if [ ! -f "pto_docs.db" ]; then
     touch pto_docs.db
 fi
 
-# Создание исполняемого файла с помощью PyInstaller
-echo "Создаем исполняемый файл для полного проекта..."
-
 # Создаем временный каталог для сборки
 mkdir -p build_temp
 
-# Проверяем и копируем файлы, если они существуют
-if [ -d "src/backend-python" ]; then
-    echo "Копируем backend файлы..."
-    mkdir -p build_temp/src/backend-python
-    cp -r src/backend-python/* build_temp/src/backend-python/
-fi
-
-if [ -d "src/frontend" ]; then
-    echo "Копируем frontend файлы..."
-    mkdir -p build_temp/src/frontend
-    cp -r src/frontend/* build_temp/src/frontend/
-fi
-
-if [ -d "electron-app" ]; then
-    echo "Копируем electron файлы..."
-    mkdir -p build_temp/electron-app
-    cp -r electron-app/* build_temp/electron-app/
-fi
-
-if [ -d "desktop-app" ]; then
-    echo "Копируем desktop файлы..."
-    mkdir -p build_temp/desktop-app
-    cp -r desktop-app/* build_temp/desktop-app/
-fi
-
-# Копируем основные файлы
+# Копируем все необходимые файлы и директории
+cp -r src/ build_temp/src/ 2>/dev/null || echo "Директория src не найдена или пустая"
+cp -r electron-app/ build_temp/electron-app/ 2>/dev/null || echo "Директория electron-app не найдена или пустая"
+cp -r desktop-app/ build_temp/desktop-app/ 2>/dev/null || echo "Директория desktop-app не найдена или пустая"
+cp -r assets/ build_temp/assets/ 2>/dev/null || echo "Директория assets не найдена или пустая"
 cp main.py config.py requirements.txt pto_docs.db build_temp/ 2>/dev/null || touch build_temp/pto_docs.db
 
-# Создание исполняемого файла с помощью PyInstaller
+# Переходим во временный каталог
 cd build_temp
+
+# Создание исполняемого файла с помощью PyInstaller
 pyinstaller --onefile --console \
-    --add-data="../pto_docs.db:." \
-    --add-data="../assets/icon.ico:assets" \
-    --add-data="../config.py:." \
-    --add-data="../src:src" \
-    --add-data="../electron-app:electron-app" \
-    --add-data="../desktop-app:desktop-app" \
+    --add-data="pto_docs.db:." \
+    --add-data="assets:assets" \
+    --add-data="config.py:." \
+    --add-data="src:src" \
+    --add-data="electron-app:electron-app" \
+    --add-data="desktop-app:desktop-app" \
     --hidden-import=sqlite3 \
     --hidden-import=sqlalchemy \
     --hidden-import=fastapi \
@@ -93,26 +71,30 @@ pyinstaller --onefile --console \
     --hidden-import=python-multipart \
     --hidden-import=alembic \
     --clean \
-    main.py -n StrodService-Full
+    main.py -n StrodService-Complete
 
 BUILD_STATUS=$?
 
 # Возвращаемся в исходную директорию
 cd ..
 
+# Копируем результат в основную директорию, если сборка успешна
+if [ $BUILD_STATUS -eq 0 ]; then
+    if [ -f "build_temp/dist/StrodService-Complete" ] || [ -f "build_temp/dist/StrodService-Complete.exe" ]; then
+        cp "build_temp/dist/StrodService-Complete"* . 2>/dev/null || cp "build_temp/dist/StrodService-Complete.exe" . 2>/dev/null
+        echo
+        echo "========================================"
+        echo "Сборка полного проекта завершена успешно!"
+        echo "EXE файл находится в текущей папке"
+        echo "========================================"
+        echo
+    fi
+fi
+
 # Удаляем временный каталог
 rm -rf build_temp
 
-if [ $BUILD_STATUS -eq 0 ]; then
-    echo
-    echo "========================================"
-    echo "Сборка полного проекта завершена успешно!"
-    echo "EXE файл находится в папке dist/"
-    echo "Запустите его с командой: ./StrodService-Full full-project"
-    echo "========================================"
-    echo
-    ls -la dist/
-else
+if [ $BUILD_STATUS -ne 0 ]; then
     echo "Ошибка при сборке исполняемого файла"
     exit 1
 fi
